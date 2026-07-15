@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Katalog Kopi — Mazaya Coffee</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#2a2420;font-family:'Lato',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px}
+.viewer-controls{display:flex;align-items:center;gap:12px;margin:0 auto 16px;flex-wrap:wrap;justify-content:center;box-sizing:border-box}
+.nav-btn{background:#4a3e38;border:none;color:#d4b896;border-radius:4px;padding:8px 18px;font-size:13px;cursor:pointer;font-family:'Lato',sans-serif;font-weight:700;letter-spacing:.5px}
+.nav-btn:hover{background:#6b4226}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.page-indicator{color:#c49a3c;font-family:'Playfair Display',serif;font-size:16px;min-width:120px;text-align:center}
+.thumb-strip{display:flex;gap:4px;overflow-x:auto;margin:0 auto 12px;padding:8px;background:#1c1a17;border-radius:6px;box-sizing:border-box}
+.thumb{min-width:44px;height:60px;border-radius:3px;cursor:pointer;border:2px solid transparent;background:#3a2e28;display:flex;align-items:center;justify-content:center;font-size:8px;color:#8c7b6e;text-align:center;padding:2px;transition:.15s;flex-direction:column;gap:2px}
+.thumb:hover{border-color:#c49a3c80}
+.thumb.active{border-color:#c49a3c}
+.thumb-num{font-size:7px;color:#c49a3c}
+.page-frame{width:640px;background:#f5f0e8;border-radius:4px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);flex-shrink:0}
+#frameOuter{width:100%;display:flex;justify-content:center}
+@media (max-width:700px){ body{padding:12px 6px} .viewer-controls{gap:6px} .nav-btn{padding:7px 12px;font-size:12px} .page-indicator{font-size:13px;min-width:90px} }
+
+/* ─── SHARED COMPONENTS ─── */
+.top-bar{padding:10px 32px;display:flex;justify-content:space-between;align-items:center}
+.tb-text{font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:700}
+.tb-brand{font-family:'Playfair Display',serif;font-size:14px;letter-spacing:2px}
+.hero{padding:32px 32px 24px;position:relative}
+.hero-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px}
+.hero-title{font-family:'Playfair Display',serif;font-size:38px;font-weight:700;line-height:1.05;margin-bottom:4px;color:#fff}
+.hero-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.badges{display:flex;gap:7px;flex-wrap:wrap}
+.badge{background:rgba(255,255,255,.10);border:1px solid rgba(196,154,60,.45);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:2px}
+.badge.special{background:rgba(196,154,60,.2);color:#fff}
+.img-box{position:absolute;right:24px;top:20px;width:130px;height:130px;background:rgba(196,154,60,.10);border:1px solid rgba(196,154,60,.28);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;text-align:center;line-height:1.4}
+.body-area{padding:22px 32px;display:flex;flex-direction:column;gap:18px}
+.section-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-bottom:9px}
+.flavor-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.ftag{border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.4px}
+.bar-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.bar-key{font-size:10px;letter-spacing:.8px;text-transform:uppercase;flex:1;color:#8c7b6e}
+.bar-track{flex:2;height:4px;background:#ddd3c5;border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px}
+.brew-item{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px}
+.brew-dot{width:6px;height:6px;border-radius:50%;background:#c49a3c;flex-shrink:0;margin-top:3px}
+.brew-text{font-size:12px;color:#1c1a17}
+.brew-note{font-size:10px;color:#8c7b6e;margin-left:auto}
+.origin-box{background:#ede5d8;padding:14px;border-radius:4px;display:flex;gap:14px;align-items:flex-start}
+.map-box{width:78px;height:68px;background:#d4c4b0;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;color:#8c7b6e;text-align:center;letter-spacing:.5px;text-transform:uppercase}
+.origin-name{font-family:'Playfair Display',serif;font-size:15px;margin-bottom:5px}
+.origin-detail{font-size:11px;color:#8c7b6e;display:flex;gap:5px;margin-bottom:2px}
+.origin-detail strong{color:#1c1a17;font-weight:700}
+.narasi{font-size:12px;line-height:1.85;font-style:italic;border-top:1px solid #d4c4b0;padding-top:14px;color:#4a3f36}
+.bottom-bar{padding:10px 32px;display:flex;justify-content:space-between;align-items:center;background:#1c1a17}
+.bb-text{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8c7b6e}
+.bb-num{font-family:'Playfair Display',serif;font-size:18px;color:#c49a3c}
+
+.edu-box{border-left:3px solid;padding:13px 15px;border-radius:0 4px 4px 0}
+.edu-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:7px}
+.edu-text{font-size:11px;line-height:1.6;color:#4a3f36}
+.edu-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.edu-card{border-radius:3px;padding:9px 11px}
+.edu-card-title{font-size:10px;font-weight:700;margin-bottom:2px}
+.edu-card-desc{font-size:9px;line-height:1.5}
+
+.trio-row{display:flex;gap:6px}
+.trio-item{flex:1;border-radius:3px;padding:8px 9px}
+.trio-name{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;color:#8c7b6e}
+.trio-name.act{color:#1c1a17}
+.trio-desc{font-size:10px;color:#6b5a4a;line-height:1.4}
+
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.stat-card{background:rgba(74,48,32,.08);border:1px solid rgba(74,48,32,.15);border-radius:3px;padding:9px 8px;text-align:center}
+.stat-num{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;line-height:1;margin-bottom:2px}
+.stat-unit{font-size:8px;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.stat-label{font-size:9px;line-height:1.3}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.half-left,.half-right{}
+
+.pg{display:none}
+.pg.active{display:block}
+
+/* ─── DARK PAGE OVERRIDE ─── */
+.dark-page{background:#1c1a17;color:#e8ddd5}
+.dark-page .bottom-bar{background:#0e0c0a;border-top:1px solid rgba(196,120,138,.15)}
+
+/* ─── COVER ─── */
+.cover-page{background:#1c1a17;color:#e8ddd5}
+.cover-content{padding:36px 32px 28px;position:relative}
+.cover-eyebrow{font-size:9px;letter-spacing:5px;color:rgba(196,154,60,.6);text-transform:uppercase;margin-bottom:14px}
+.cover-brand{font-family:'Playfair Display',serif;font-size:48px;color:#fff;font-weight:700;line-height:.95;letter-spacing:-1px}
+.cover-sub{font-family:'Playfair Display',serif;font-size:18px;color:rgba(212,184,140,.7);font-style:italic;margin-top:4px}
+.cover-divider{width:60px;height:1px;background:#c49a3c;margin:18px 0}
+.cover-tagline{font-size:13px;color:rgba(212,184,140,.75);line-height:1.7;max-width:300px;margin-bottom:22px}
+.cover-stats{display:flex;gap:22px;margin-bottom:24px}
+.cstat-num{font-family:'Playfair Display',serif;font-size:24px;color:#c49a3c;font-weight:700;line-height:1}
+.cstat-lbl{font-size:9px;color:rgba(168,144,128,.7);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.cover-cat-tag{background:rgba(196,154,60,.10);border:1px solid rgba(196,154,60,.25);border-radius:3px;padding:8px 14px;display:inline-block;margin-bottom:22px}
+.cover-cat-tag span{font-size:10px;letter-spacing:3px;color:#c49a3c;text-transform:uppercase;font-weight:700}
+.cover-photo-box{background:rgba(255,255,255,.04);border:1px solid rgba(196,154,60,.15);border-radius:4px;padding:16px;text-align:center;margin-bottom:20px;color:rgba(168,144,128,.5);font-size:10px;letter-spacing:1px}
+.cover-pills{display:flex;flex-wrap:wrap;gap:5px}
+.cpill{background:rgba(255,255,255,.05);border:1px solid rgba(196,154,60,.18);border-radius:2px;padding:3px 8px;font-size:8px;color:rgba(168,144,128,.7);letter-spacing:1px;text-transform:uppercase}
+.cpill.g{border-color:rgba(196,154,60,.40);color:rgba(212,184,140,.85)}
+.cover-bottom{background:#0e0c0a;padding:12px 32px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(196,154,60,.12)}
+
+/* ─── INDEX ─── */
+.idx-hero{background:#f5f0e8;padding:20px 32px 10px;border-bottom:2px solid #c49a3c}
+.idx-body{padding:18px 32px}
+.idx-sec-header{display:flex;align-items:center;gap:8px;margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid #d4c4b0}
+.idx-sec-tag{border-radius:2px;padding:3px 8px;font-size:8px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.idx-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:14px}
+.idx-item{display:flex;align-items:center;padding:5px 0;border-bottom:1px dotted #d4c4b0}
+.idx-num{font-family:'Playfair Display',serif;font-size:11px;color:#c49a3c;font-weight:700;width:20px;flex-shrink:0}
+.idx-name{font-size:11px;color:#1c1a17;flex:1}
+.idx-name .sub{font-size:9px;color:#8c7b6e;display:block}
+.idx-dots{flex:1;border-bottom:1px dotted #c4b4a0;margin:0 5px;height:1px;align-self:flex-end;margin-bottom:3px}
+.idx-page{font-size:11px;color:#8c7b6e;width:16px;text-align:right;flex-shrink:0}
+.idx-qr-area{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.idx-qr-card{background:#ede5d8;border-radius:4px;padding:10px;display:flex;gap:9px}
+.idx-qr-box{width:48px;height:48px;background:#d4c4b0;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:7px;color:#8c7b6e;text-align:center}
+.idx-qr-label{font-size:9px;font-weight:700;color:#6b4226;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.idx-qr-desc{font-size:10px;color:#8c7b6e;line-height:1.4}
+
+/* ─── PENGANTAR ─── */
+.peng-hero{padding:26px 32px;background:linear-gradient(150deg,#3d2010,#6b4226,#8b5e3c)}
+.peng-body{padding:22px 32px}
+.owner-card{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px}
+.avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#6b4226,#c49a3c);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:20px;color:#fff;font-weight:700}
+.owner-name{font-family:'Playfair Display',serif;font-size:15px;color:#6b4226;font-weight:700;margin-bottom:2px}
+.owner-title{font-size:10px;color:#8c7b6e;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.owner-quote{font-size:11px;color:#5a4030;line-height:1.6;font-style:italic}
+.peng-divider{width:38px;height:2px;background:#c49a3c;margin:14px 0}
+.letter{font-size:12px;color:#4a3020;line-height:1.9;margin-bottom:14px}
+.peng-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin:16px 0}
+.pstat{background:#ede5d8;border-radius:4px;padding:11px 9px;text-align:center}
+.pstat-num{font-family:'Playfair Display',serif;font-size:20px;color:#6b4226;font-weight:700;line-height:1}
+.pstat-unit{font-size:8px;color:#c49a3c;letter-spacing:1.5px;text-transform:uppercase;margin:2px 0}
+.pstat-label{font-size:9px;color:#8c7b6e;line-height:1.3}
+.sig-area{display:flex;justify-content:space-between;align-items:center;margin-top:14px;border-top:1px solid #d4c4b0;padding-top:13px}
+.sig-text{font-family:'Playfair Display',serif;font-size:18px;color:#6b4226;font-style:italic}
+.sig-label{font-size:9px;color:#8c7b6e;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.sig-tag{background:#6b4226;color:#d4b896;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:5px 11px;border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="viewer-controls">
+  <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">← Prev</button>
+  <div class="page-indicator" id="pageInd">Cover / 22</div>
+  <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
+</div>
+
+<div class="thumb-strip" id="thumbStrip"></div>
+
+<div id="frameOuter">
+<div class="page-frame" id="catalog">
+
+
+<!-- ======================================================
+     PAGE 0: COVER
+     ====================================================== -->
+<div class="pg active" id="p0">
+<div class="cover-page">
+  <div style="background:#0e0c0a;padding:8px 32px;display:flex;justify-content:space-between;border-bottom:1px solid rgba(196,154,60,.15)">
+    <span style="font-size:8px;letter-spacing:3px;color:rgba(196,154,60,.5);text-transform:uppercase">Mazaya Coffee</span>
+    <span style="font-size:8px;letter-spacing:3px;color:rgba(196,154,60,.5);text-transform:uppercase">Cafe & Roastery · Est. 2018</span>
+    <span style="font-size:8px;letter-spacing:3px;color:rgba(196,154,60,.5);text-transform:uppercase">Tembung, Medan</span>
+  </div>
+  <div class="cover-content">
+    <div class="cover-eyebrow">Coffee Origin Catalog</div>
+    <div class="cover-brand">MAZAYA</div>
+    <div class="cover-brand">COFFEE</div>
+    <div class="cover-sub">Cafe & Roastery</div>
+    <div class="cover-divider"></div>
+    <div class="cover-tagline">Kami tidak sekadar menjual kopi. Kami memperkenalkan setiap tanah, setiap tangan, dan setiap cerita yang ada di balik setiap biji yang Anda seduh.</div>
+    <div class="cover-stats">
+      <div><div class="cstat-num">7</div><div class="cstat-lbl">Tahun Beroperasi</div></div>
+      <div><div class="cstat-num">19</div><div class="cstat-lbl">Origin dalam Katalog</div></div>
+      <div><div class="cstat-num">150<span style="font-size:16px">kg</span></div><div class="cstat-lbl">Roasting per Minggu</div></div>
+    </div>
+    <div class="cover-cat-tag"><span>Katalog Edisi 2025 — 19 Origin, 2 Spesies</span></div>
+    <div class="cover-photo-box">Tempel foto roastery / proses roasting terbaik di sini<br><span style="font-size:9px">Full width · tinggi ±100px</span></div>
+    <div class="cover-pills">
+      <span class="cpill g">Gayo GR-1</span><span class="cpill g">Gayo Natural</span><span class="cpill g">Gayo Honey</span>
+      <span class="cpill g">Gayo Peaberry</span><span class="cpill g">Gayo Wine</span><span class="cpill g">Gayo Longberry</span>
+      <span class="cpill">Lintong</span><span class="cpill">Sidikalang</span><span class="cpill">Mandheling</span>
+      <span class="cpill">Kerinci</span><span class="cpill">Bali Kintamani</span><span class="cpill">Java Ijen</span>
+      <span class="cpill">Toraja Kalosi</span><span class="cpill">Papua Wamena</span><span class="cpill">Brazil</span>
+      <span class="cpill">Robusta ×4</span>
+    </div>
+  </div>
+  <div class="cover-bottom">
+    <span style="font-size:8px;letter-spacing:2px;color:rgba(168,144,128,.45);text-transform:uppercase">Jl. Bustaman No. 162, Bandar Khalifah, Tembung</span>
+    <span style="font-family:'Playfair Display',serif;font-size:16px;color:#c49a3c">2025</span>
+  </div>
+</div>
+</div>
+
+<!-- ======================================================
+     PAGE i: INDEX
+     ====================================================== -->
+<div class="pg" id="p1">
+<div style="background:#1c1a17;padding:10px 32px;display:flex;justify-content:space-between"><span class="tb-text" style="color:#8c7b6e">Daftar Isi</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#8c7b6e">19 Origin · 2 Spesies</span></div>
+<div class="idx-hero">
+  <div style="font-size:9px;letter-spacing:4px;color:#c49a3c;text-transform:uppercase;font-weight:700;margin-bottom:4px">Navigasi Katalog</div>
+  <div style="font-family:'Playfair Display',serif;font-size:24px;color:#1c1a17;font-weight:700">Daftar Semua Origin</div>
+  <div style="font-size:11px;color:#8c7b6e;letter-spacing:1px">Temukan kopi yang tepat untuk Anda</div>
+</div>
+<div class="idx-body">
+  <div class="idx-sec-header">
+    <span class="idx-sec-tag" style="background:#6b4226;color:#d4b896">Arabica</span>
+    <span style="font-family:'Playfair Display',serif;font-size:12px;color:#1c1a17">15 Origin · Washed, Natural, Honey, Wine</span>
+    <span style="font-size:11px;color:#8c7b6e;margin-left:auto">Hal. 01–15</span>
+  </div>
+  <div class="idx-grid">
+    <div class="idx-item"><div class="idx-num">01</div><div class="idx-name">Gayo GR-1<span class="sub">Washed · Aceh Tengah</span></div><div class="idx-dots"></div><div class="idx-page">01</div></div>
+    <div class="idx-item"><div class="idx-num">02</div><div class="idx-name">Gayo Natural<span class="sub">Natural · Bener Meriah</span></div><div class="idx-dots"></div><div class="idx-page">02</div></div>
+    <div class="idx-item"><div class="idx-num">03</div><div class="idx-name">Gayo Honey<span class="sub">Honey Process · Aceh</span></div><div class="idx-dots"></div><div class="idx-page">03</div></div>
+    <div class="idx-item"><div class="idx-num">04</div><div class="idx-name">Gayo Peaberry<span class="sub">Washed · Rare Grade</span></div><div class="idx-dots"></div><div class="idx-page">04</div></div>
+    <div class="idx-item"><div class="idx-num">05</div><div class="idx-name">Gayo Wine<span class="sub">Wine Process · Extended</span></div><div class="idx-dots"></div><div class="idx-page">05</div></div>
+    <div class="idx-item"><div class="idx-num">06</div><div class="idx-name">Gayo Longberry<span class="sub">Washed · Elongated Bean</span></div><div class="idx-dots"></div><div class="idx-page">06</div></div>
+    <div class="idx-item"><div class="idx-num">07</div><div class="idx-name">Lintong<span class="sub">Giling Basah · Tapanuli</span></div><div class="idx-dots"></div><div class="idx-page">07</div></div>
+    <div class="idx-item"><div class="idx-num">08</div><div class="idx-name">Sidikalang<span class="sub">Giling Basah · Dairi</span></div><div class="idx-dots"></div><div class="idx-page">08</div></div>
+    <div class="idx-item"><div class="idx-num">09</div><div class="idx-name">Mandheling<span class="sub">Giling Basah · Sumut</span></div><div class="idx-dots"></div><div class="idx-page">09</div></div>
+    <div class="idx-item"><div class="idx-num">10</div><div class="idx-name">Kerinci<span class="sub">Washed · Gunung Kerinci</span></div><div class="idx-dots"></div><div class="idx-page">10</div></div>
+    <div class="idx-item"><div class="idx-num">11</div><div class="idx-name">Bali Kintamani<span class="sub">Washed · UNESCO Subak</span></div><div class="idx-dots"></div><div class="idx-page">11</div></div>
+    <div class="idx-item"><div class="idx-num">12</div><div class="idx-name">Java Ijen<span class="sub">Washed · Blue Fire Volcano</span></div><div class="idx-dots"></div><div class="idx-page">12</div></div>
+    <div class="idx-item"><div class="idx-num">13</div><div class="idx-name">Toraja Kalosi<span class="sub">Giling Basah · Sulawesi</span></div><div class="idx-dots"></div><div class="idx-page">13</div></div>
+    <div class="idx-item"><div class="idx-num">14</div><div class="idx-name">Papua Wamena<span class="sub">Washed · Lembah Baliem</span></div><div class="idx-dots"></div><div class="idx-page">14</div></div>
+    <div class="idx-item"><div class="idx-num">15</div><div class="idx-name">Brazil<span class="sub">Natural · Minas Gerais</span></div><div class="idx-dots"></div><div class="idx-page">15</div></div>
+  </div>
+  <div class="idx-sec-header">
+    <span class="idx-sec-tag" style="background:#2a2420;color:#a89080">Robusta</span>
+    <span style="font-family:'Playfair Display',serif;font-size:12px;color:#1c1a17">4 Origin · EK1 Grade</span>
+    <span style="font-size:11px;color:#8c7b6e;margin-left:auto">Hal. 16–19</span>
+  </div>
+  <div class="idx-grid">
+    <div class="idx-item"><div class="idx-num" style="color:#d4a020">16</div><div class="idx-name">Robusta Gayo EK1<span class="sub">Most Bold · Aceh Tengah</span></div><div class="idx-dots"></div><div class="idx-page">16</div></div>
+    <div class="idx-item"><div class="idx-num" style="color:#d4a020">17</div><div class="idx-name">Robusta Sidikalang EK1<span class="sub">Most Balanced · Dairi</span></div><div class="idx-dots"></div><div class="idx-page">17</div></div>
+    <div class="idx-item"><div class="idx-num" style="color:#d4a020">18</div><div class="idx-name">Robusta Lampung EK1<span class="sub">Most Smoky · Lampung</span></div><div class="idx-dots"></div><div class="idx-page">18</div></div>
+    <div class="idx-item"><div class="idx-num" style="color:#d4a020">19</div><div class="idx-name">Robusta Java EK1<span class="sub">Most Clean · Jawa Timur</span></div><div class="idx-dots"></div><div class="idx-page">19</div></div>
+  </div>
+  <div class="idx-qr-area">
+    <div class="idx-qr-card"><div class="idx-qr-box">QR<br>WA</div><div><div class="idx-qr-label">Order & Info</div><div class="idx-qr-desc">WhatsApp Mazaya Coffee<br><strong>0812 6347 8743</strong></div></div></div>
+    <div class="idx-qr-card"><div class="idx-qr-box">QR<br>IG</div><div><div class="idx-qr-label">Instagram</div><div class="idx-qr-desc">Follow untuk update batch terbaru & promo</div></div></div>
+  </div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Jl. Bustaman No. 162, Tembung</span><span class="bb-num">i</span></div>
+</div>
+
+
+<!-- PAGE ii: PENGANTAR -->
+<div class="pg" id="p2">
+<div class="top-bar" style="background:#6b4226"><span class="tb-text" style="color:#d4b896">Kata Pengantar</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#d4b896">Cafe & Roastery</span></div>
+<div class="peng-hero">
+  <div style="font-size:9px;letter-spacing:4px;color:#d4b896;text-transform:uppercase;margin-bottom:7px">Dari Kami untuk Anda</div>
+  <div style="font-family:'Playfair Display',serif;font-size:26px;color:#fff;font-weight:700;line-height:1.2;margin-bottom:3px">Kenapa Kami Membuat<br>Katalog Ini</div>
+  <div style="font-size:11px;color:rgba(212,184,140,.8);letter-spacing:1px">Tembung, 2025</div>
+</div>
+<div class="peng-body">
+  <div class="owner-card">
+    <div class="avatar">R</div>
+    <div><div class="owner-name">Reza</div><div class="owner-title">Owner & Head Roaster — Mazaya Coffee</div><div class="owner-quote">"Kopi yang baik tidak perlu penjelasan panjang. Tapi cerita di baliknya selalu layak untuk didengar."</div></div>
+  </div>
+  <div class="peng-divider"></div>
+  <div class="letter">Tujuh tahun lalu, saya memulai Mazaya Coffee dengan satu drum roaster kecil dan satu keyakinan sederhana: <strong>kopi Indonesia terlalu baik untuk dijual tanpa cerita.</strong></div>
+  <div class="letter">Selama tujuh tahun itu, kami belajar bahwa pelanggan yang paling setia bukan mereka yang sekadar menyukai rasa kopi kami — melainkan mereka yang <strong>memahami dari mana kopi itu berasal.</strong> Mereka yang tahu bahwa Gayo Peaberry hanya ada 5% dari setiap panen. Mereka yang tahu bahwa kopi Papua Wamena hanya bisa dicapai dengan pesawat perintis.</div>
+  <div class="peng-stats">
+    <div class="pstat"><div class="pstat-num">7</div><div class="pstat-unit">Tahun</div><div class="pstat-label">Beroperasi di Tembung</div></div>
+    <div class="pstat"><div class="pstat-num">150<span style="font-size:13px">kg</span></div><div class="pstat-unit">Per Minggu</div><div class="pstat-label">Green bean diroasting</div></div>
+    <div class="pstat"><div class="pstat-num">19</div><div class="pstat-unit">Origin</div><div class="pstat-label">Dalam katalog ini</div></div>
+  </div>
+  <div class="letter" style="margin-bottom:0">Di setiap halaman katalog ini, Anda akan menemukan bukan hanya rasa — tapi <strong>alasan mengapa rasa itu ada.</strong> Kami berharap setelah membacanya, Anda tidak sekadar memesan kopi. Anda memesan sebuah perjalanan.</div>
+  <div class="sig-area">
+    <div><div class="sig-text">Reza</div><div class="sig-label">Owner & Head Roaster</div></div>
+    <div class="sig-tag">Mazaya Coffee — Est. 2018</div>
+  </div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">ii</span></div>
+</div>
+
+
+<!-- ============================================================
+     HELPER MACRO: each origin page follows same structure
+     ============================================================ -->
+
+<!-- PAGE 01: GAYO GR-1 -->
+<div class="pg" id="p3">
+<div class="top-bar" style="background:#6b4226"><span class="tb-text" style="color:#d4b896">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#d4b896">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#1a0e06,#3a2010,#4a3020,#6b4226)">
+  <div class="img-box" style="color:#d4b896">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#d4b896">Arabica — Washed Process</div>
+  <div class="hero-title">Gayo<br>GR-1</div>
+  <div class="hero-sub" style="color:#d4b896">Aceh Tengah & Bener Meriah, Sumatera</div>
+  <div class="badges">
+    <span class="badge" style="color:#d4b896">Single Origin</span><span class="badge" style="color:#d4b896">Double Pick</span>
+    <span class="badge" style="color:#d4b896">1.200–1.500 mdpl</span><span class="badge" style="color:#d4b896">PIRT Terdaftar</span>
+  </div>
+</div>
+<div class="body-area">
+  <div>
+    <div class="section-label" style="color:#6b4226">Flavor Notes</div>
+    <div style="border-left:2px solid #6b4226;padding-left:14px">
+      <div class="flavor-tags">
+        <span class="ftag" style="background:#eae0d5;color:#4a3020">Cokelat Susu</span><span class="ftag" style="background:#eae0d5;color:#4a3020">Herbal Segar</span>
+        <span class="ftag" style="background:#eae0d5;color:#4a3020">Citrus Ringan</span><span class="ftag" style="background:#eae0d5;color:#4a3020">Karamel</span>
+        <span class="ftag" style="background:#eae0d5;color:#4a3020">Bersih</span>
+      </div>
+    </div>
+  </div>
+  <div class="edu-box" style="background:#f5f0e8;border-color:#6b4226;border-left-color:#6b4226">
+    <div class="edu-title" style="color:#4a3020">Apa itu Double Pick (Washed Process)?</div>
+    <div class="edu-text">Proses Washed berarti buah kopi dikupas dan dicuci sebelum dikeringkan, menghasilkan profil yang bersih dan konsisten. Double Pick artinya biji dipilih dua kali secara manual untuk memastikan hanya yang terbaik yang masuk — tanpa cacat, tanpa kompromi.</div>
+  </div>
+  <div class="grid2">
+    <div>
+      <div class="section-label" style="color:#6b4226">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:35%;background:#6b4226"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:72%;background:#6b4226"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Sweetness</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Bitterness</span><div class="bar-track"><div class="bar-fill" style="width:28%;background:#6b4226"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:#c49a3c"></div></div></div>
+    </div>
+    <div>
+      <div class="section-label" style="color:#6b4226">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot"></div><span class="brew-text">Espresso</span><span class="brew-note">Rekomendasi utama</span></div>
+      <div class="brew-item"><div class="brew-dot"></div><span class="brew-text">V60 / Pour Over</span><span class="brew-note">Single origin</span></div>
+      <div class="brew-item"><div class="brew-dot"></div><span class="brew-text">French Press</span><span class="brew-note">Full immersion</span></div>
+      <div class="brew-item"><div class="brew-dot"></div><span class="brew-text">Cold Brew</span><span class="brew-note">12–16 jam</span></div>
+      <div class="brew-item"><div class="brew-dot"></div><span class="brew-text">Moka Pot</span><span class="brew-note">Medium grind</span></div>
+    </div>
+  </div>
+  <div class="origin-box">
+    <div class="map-box">Peta<br>Aceh<br>Tengah</div>
+    <div>
+      <div class="origin-name" style="color:#4a3020">Aceh Tengah & Bener Meriah, Aceh</div>
+      <div class="origin-detail"><strong>Provinsi:</strong> Aceh, Sumatera</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.200–1.500 mdpl</div>
+      <div class="origin-detail"><strong>Proses:</strong> Washed (Double Pick)</div>
+      <div class="origin-detail"><strong>Varietas:</strong> Bourbon, Tim Tim</div>
+      <div class="origin-detail"><strong>Panen:</strong> Oktober – Februari</div>
+    </div>
+  </div>
+  <div class="narasi">"Kopi Gayo GR-1 tumbuh di atas kabut pegunungan Aceh, di tanah vulkanik yang dingin dan kaya mineral. Proses Washed Double Pick memastikan hanya buah terpilih terbaik yang melalui fermentasi bersih — menghasilkan cangkir yang konsisten, smooth, dan jujur. Inilah kopi yang tidak perlu berteriak untuk dikenali."</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">01</span></div>
+</div>
+
+<!-- PAGE 02: GAYO NATURAL -->
+<div class="pg" id="p4">
+<div class="top-bar" style="background:#7b3f5e"><span class="tb-text" style="color:#d4b0c5">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#d4b0c5">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#3d1428,#7b3f5e,#a0527a)">
+  <div class="img-box" style="color:#d4b0c5">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#d4b0c5">Arabica — Natural Process</div>
+  <div class="hero-title">Gayo<br>Natural</div>
+  <div class="hero-sub" style="color:#d4b0c5">Bener Meriah, Aceh, Sumatera</div>
+  <div class="badges"><span class="badge" style="color:#d4b0c5">Single Origin</span><span class="badge" style="color:#d4b0c5">Natural Process</span><span class="badge" style="color:#d4b0c5">1.200–1.500 mdpl</span><span class="badge" style="color:#d4b0c5">Sun-Dried</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#7b3f5e">Flavor Notes</div>
+    <div style="border-left:2px solid #7b3f5e;padding-left:14px"><div class="flavor-tags">
+      <span class="ftag" style="background:#edd8e5;color:#4e2040">Blueberry</span><span class="ftag" style="background:#edd8e5;color:#4e2040">Strawberry</span>
+      <span class="ftag" style="background:#edd8e5;color:#4e2040">Tropical Fruit</span><span class="ftag" style="background:#edd8e5;color:#4e2040">Floral</span>
+      <span class="ftag" style="background:#edd8e5;color:#4e2040">Dark Chocolate</span><span class="ftag" style="background:#edd8e5;color:#4e2040">Wine-like</span>
+    </div></div>
+  </div>
+  <div class="edu-box" style="background:#f4e8f0;border-color:#7b3f5e">
+    <div class="edu-title" style="color:#4e2040">Apa itu Natural Process?</div>
+    <div class="edu-text">Buah kopi dijemur utuh di bawah sinar matahari selama 3–6 minggu sebelum dikupas. Gula dari daging buah meresap ke dalam biji — menghasilkan karakter fruity dan manis yang tidak bisa dicapai oleh proses lain.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#7b3f5e">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:58%;background:#7b3f5e"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:68%;background:#7b3f5e"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Sweetness</span><div class="bar-track"><div class="bar-fill" style="width:85%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Fruitiness</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:75%;background:#7b3f5e"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#7b3f5e">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7b3f5e"></div><span class="brew-text">V60 / Pour Over</span><span class="brew-note">Paling direkomendasikan</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7b3f5e"></div><span class="brew-text">Aeropress</span><span class="brew-note">Fruity lebih keluar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7b3f5e"></div><span class="brew-text">Cold Brew</span><span class="brew-note">12–16 jam, sangat segar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7b3f5e"></div><span class="brew-text">French Press</span><span class="brew-note">Full body & fruity</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7b3f5e"></div><span class="brew-text">Espresso</span><span class="brew-note">Karakter unik & bold</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Bener<br>Meriah</div>
+    <div><div class="origin-name" style="color:#4e2040">Bener Meriah, Aceh</div>
+      <div class="origin-detail"><strong>Provinsi:</strong> Aceh, Sumatera</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.200–1.500 mdpl</div>
+      <div class="origin-detail"><strong>Proses:</strong> Natural (Sun-Dried)</div>
+      <div class="origin-detail"><strong>Varietas:</strong> Bourbon, Ateng</div>
+      <div class="origin-detail"><strong>Penjemuran:</strong> Raised African Beds</div>
+    </div>
+  </div>
+  <div class="narasi">"Gayo Natural adalah ekspresi paling jujur dari tanah Aceh. Ketika buah kopi dijemur utuh di bawah matahari pegunungan selama berminggu-minggu, terjadi transformasi ajaib — gula buah meresap perlahan ke dalam biji, menciptakan kompleksitas rasa yang tidak bisa direkayasa. Setiap tegukan membawa nuansa buah segar dari ketinggian 1.400 meter."</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">02</span></div>
+</div>
+
+
+<!-- PAGE 03: GAYO HONEY -->
+<div class="pg" id="p5">
+<div class="top-bar" style="background:#7a5800"><span class="tb-text" style="color:#f0d080">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#f0d080">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#4a3500,#8b6500,#b8860b)">
+  <div class="img-box" style="color:#f0d080">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#f0d080">Arabica — Honey Process</div>
+  <div class="hero-title">Gayo<br>Honey</div>
+  <div class="hero-sub" style="color:#f0d080">Aceh Tengah & Bener Meriah, Sumatera</div>
+  <div class="badges"><span class="badge" style="color:#f0d080">Single Origin</span><span class="badge" style="color:#f0d080">Honey Process</span><span class="badge" style="color:#f0d080">1.200–1.500 mdpl</span><span class="badge" style="color:#f0d080">Semi-Washed</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#b8860b">Flavor Notes</div>
+    <div style="border-left:2px solid #b8860b;padding-left:14px"><div class="flavor-tags">
+      <span class="ftag" style="background:#faf0cc;color:#7a5800">Peach</span><span class="ftag" style="background:#faf0cc;color:#7a5800">Aprikot</span>
+      <span class="ftag" style="background:#faf0cc;color:#7a5800">Karamel</span><span class="ftag" style="background:#faf0cc;color:#7a5800">Madu</span>
+      <span class="ftag" style="background:#faf0cc;color:#7a5800">Floral Halus</span><span class="ftag" style="background:#faf0cc;color:#7a5800">Smooth</span>
+    </div></div>
+  </div>
+  <div class="edu-box" style="background:#faf0cc;border-color:#b8860b">
+    <div class="edu-title" style="color:#7a5800">Apa itu Honey Process?</div>
+    <div class="edu-text">Kulit buah dikupas, tetapi lapisan lendir (mucilage) yang manis dibiarkan menempel pada biji saat dijemur. Nama "Honey" bukan dari rasa madu — tapi dari tekstur lendir yang lengket seperti madu itu sendiri.</div>
+    <div style="margin-top:10px"><div class="trio-row">
+      <div class="trio-item" style="background:#ede5d8"><div class="trio-name">Washed</div><div class="trio-desc">Bersih, asam terang</div></div>
+      <div class="trio-item" style="background:#faf0cc;border:1.5px solid #b8860b"><div class="trio-name act">Honey ← Kita</div><div class="trio-desc">Manis alami, smooth</div></div>
+      <div class="trio-item" style="background:#ede5d8"><div class="trio-name">Natural</div><div class="trio-desc">Fruity kuat, bold</div></div>
+    </div></div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#b8860b">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:42%;background:#b8860b"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:#b8860b"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Sweetness</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Smoothness</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:70%;background:#b8860b"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#b8860b">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#b8860b"></div><span class="brew-text">V60 / Pour Over</span><span class="brew-note">Sweetness terbaik</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#b8860b"></div><span class="brew-text">Espresso</span><span class="brew-note">Crema manis alami</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#b8860b"></div><span class="brew-text">Latte / Cappuccino</span><span class="brew-note">Sangat recommended</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#b8860b"></div><span class="brew-text">Aeropress</span><span class="brew-note">Fruity & smooth</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#b8860b"></div><span class="brew-text">Cold Brew</span><span class="brew-note">Manis alami tanpa gula</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Aceh<br>Tengah</div>
+    <div><div class="origin-name" style="color:#7a5800">Aceh Tengah & Bener Meriah, Aceh</div>
+      <div class="origin-detail"><strong>Proses:</strong> Honey (Semi-Washed)</div>
+      <div class="origin-detail"><strong>Varietas:</strong> Bourbon, Ateng, Tim Tim</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.200–1.500 mdpl</div>
+      <div class="origin-detail"><strong>Karakter:</strong> Terbaik untuk pemula specialty</div>
+    </div>
+  </div>
+  <div class="narasi">"Honey Process adalah titik manis yang sempurna antara keteraturan Washed dan kebebasan Natural. Di ketinggian Aceh yang dingin, lendir manis membungkus biji selama penjemuran — perlahan menyerahkan rasa peach dan karamel yang halus. Ini kopi yang tidak menuntut. Ia menyambut siapa saja yang datang."</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">03</span></div>
+</div>
+
+<!-- PAGE 04: GAYO PEABERRY -->
+<div class="pg" id="p6">
+<div class="top-bar" style="background:#6b3318"><span class="tb-text" style="color:#e8c4a0">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#e8c4a0">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#3a1a08,#7a3a18,#a0522d)">
+  <div class="img-box" style="color:#e8c4a0">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#e8c4a0">Arabica — Washed Process · Rare Grade</div>
+  <div class="hero-title">Gayo<br>Peaberry</div>
+  <div class="hero-sub" style="color:#e8c4a0">Aceh Tengah, Sumatera — Biji Tunggal Pilihan</div>
+  <div class="badges"><span class="badge" style="color:#e8c4a0">Single Origin</span><span class="badge" style="color:#e8c4a0">Peaberry Grade</span><span class="badge" style="color:#e8c4a0">Hanya ~5% Panen</span><span class="badge" style="color:#e8c4a0">1.200–1.500 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#a0522d">Flavor Notes</div>
+    <div style="border-left:2px solid #a0522d;padding-left:14px"><div class="flavor-tags">
+      <span class="ftag" style="background:#f5e8dc;color:#6b3318">Citrus Cerah</span><span class="ftag" style="background:#f5e8dc;color:#6b3318">Jeruk Manis</span>
+      <span class="ftag" style="background:#f5e8dc;color:#6b3318">Dark Chocolate</span><span class="ftag" style="background:#f5e8dc;color:#6b3318">Brown Sugar</span>
+      <span class="ftag" style="background:#f5e8dc;color:#6b3318">Kompleks</span><span class="ftag" style="background:#f5e8dc;color:#6b3318">Bright & Clean</span>
+    </div></div>
+  </div>
+  <div class="edu-box" style="background:#f5e8dc;border-color:#a0522d">
+    <div class="edu-title" style="color:#6b3318">Mengapa Peaberry Istimewa?</div>
+    <div style="display:flex;gap:18px;align-items:center;margin-bottom:9px">
+      <div style="text-align:center"><div style="display:flex;gap:3px;justify-content:center;margin-bottom:4px"><div style="width:14px;height:22px;border-radius:50%;background:rgba(160,82,45,.55)"></div><div style="width:14px;height:22px;border-radius:50%;background:rgba(160,82,45,.55)"></div></div><div style="font-size:9px;color:#6b3318;font-weight:700">Normal</div><div style="font-size:9px;color:#8c7b6e">2 biji per buah</div></div>
+      <div style="font-size:11px;color:#8c7b6e;font-weight:700">vs</div>
+      <div style="text-align:center"><div style="display:flex;gap:3px;justify-content:center;margin-bottom:4px"><div style="width:18px;height:22px;border-radius:40%;background:#a0522d"></div></div><div style="font-size:9px;color:#6b3318;font-weight:700">Peaberry</div><div style="font-size:9px;color:#8c7b6e">1 biji — bulat</div></div>
+      <div class="edu-text" style="flex:1">Normalnya satu buah kopi berisi dua biji. Peaberry terjadi ketika hanya satu biji yang berkembang — mengambil seluruh nutrisi buah sendirian, menghasilkan rasa yang lebih intens.</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px">
+      <span style="font-size:9px;color:#8c7b6e;letter-spacing:.5px;text-transform:uppercase">Kelangkaan</span>
+      <div class="bar-track" style="flex:1;height:5px"><div class="bar-fill" style="width:15%;background:#a0522d"></div></div>
+      <span style="font-size:9px;color:#a0522d;font-weight:700">Hanya ~5% dari total panen</span>
+    </div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#a0522d">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:72%;background:#a0522d"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:62%;background:#a0522d"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Sweetness</span><div class="bar-track"><div class="bar-fill" style="width:70%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Complexity</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:#a0522d"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#a0522d">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#a0522d"></div><span class="brew-text">V60 / Pour Over</span><span class="brew-note">Paling direkomendasikan</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#a0522d"></div><span class="brew-text">Japanese V60 (Iced)</span><span class="brew-note">Citrus makin bright</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#a0522d"></div><span class="brew-text">Aeropress</span><span class="brew-note">Kompleksitas keluar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#a0522d"></div><span class="brew-text">Cold Brew</span><span class="brew-note">Segar & kompleks</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#a0522d"></div><span class="brew-text">Espresso</span><span class="brew-note">Karakter sangat intens</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Aceh<br>Tengah</div>
+    <div><div class="origin-name" style="color:#6b3318">Aceh Tengah, Aceh</div>
+      <div class="origin-detail"><strong>Grade:</strong> Peaberry — biji tunggal bulat</div>
+      <div class="origin-detail"><strong>Frekuensi:</strong> ±5% dari total panen Gayo</div>
+      <div class="origin-detail"><strong>Seleksi:</strong> Disortir manual dari panen reguler</div>
+      <div class="origin-detail"><strong>Proses:</strong> Washed</div>
+    </div>
+  </div>
+  <div class="narasi">"Peaberry bukan varietas — ia adalah keajaiban kecil yang terjadi secara alami. Di antara ratusan buah kopi yang dipetik, hanya satu dari dua puluh yang menyimpan biji tunggal bulat ini. Karena sendirian, ia menyerap semua yang ditawarkan tanah Aceh — mineralitas, citrus, kompleksitas. Inilah kopi yang benar-benar tidak bisa direplikasi."</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">04</span></div>
+</div>
+
+
+<!-- PAGE 05: GAYO WINE -->
+<div class="pg" id="p7">
+<div class="top-bar" style="background:#0e0c0a;border-bottom:1px solid rgba(196,120,138,.2)"><span class="tb-text" style="color:#c4788a">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#c4788a">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(160deg,#0e0c0a,#3a0a1a,#5c1a2e,#8b2840)">
+  <div class="img-box" style="color:#c4788a;background:rgba(196,120,138,.08);border-color:rgba(196,120,138,.25)">Paste foto<br>AI generated<br>di sini</div>
+  <div style="display:inline-block;background:rgba(196,120,138,.12);border:1px solid rgba(196,120,138,.35);color:#c4788a;font-size:8px;letter-spacing:3px;text-transform:uppercase;padding:3px 10px;border-radius:2px;margin-bottom:10px">Proses Eksklusif · Extended Fermentation</div>
+  <div class="hero-label" style="color:#c4788a">Arabica — Wine Process</div>
+  <div class="hero-title">Gayo <em>Wine</em></div>
+  <div class="hero-sub" style="color:rgba(196,120,138,.8)">Aceh Tengah, Sumatera — Puncak Kompleksitas Gayo</div>
+  <div class="badges"><span class="badge special" style="background:rgba(92,26,46,.5);border-color:#c4788a;color:#fff">Top Tier Gayo</span><span class="badge" style="color:#c4788a;border-color:rgba(196,120,138,.4)">Wine Process</span><span class="badge" style="color:#c4788a;border-color:rgba(196,120,138,.4)">Extended Fermentation</span></div>
+</div>
+<div class="body-area" style="background:#1c1a17;color:#e8ddd5">
+  <div><div class="section-label" style="color:#c4788a">Flavor Notes</div>
+    <div style="border-left:2px solid #8b2840;padding-left:14px"><div class="flavor-tags">
+      <span class="ftag" style="background:rgba(92,26,46,.5);border:1px solid rgba(196,120,138,.2);color:#f2dde2">Blackcurrant</span>
+      <span class="ftag" style="background:rgba(92,26,46,.5);border:1px solid rgba(196,120,138,.2);color:#f2dde2">Anggur Merah</span>
+      <span class="ftag" style="background:rgba(92,26,46,.5);border:1px solid rgba(196,120,138,.2);color:#f2dde2">Dark Cherry</span>
+      <span class="ftag" style="background:rgba(92,26,46,.5);border:1px solid rgba(196,120,138,.2);color:#f2dde2">Dark Chocolate</span>
+      <span class="ftag" style="background:rgba(92,26,46,.5);border:1px solid rgba(196,120,138,.2);color:#f2dde2">Fermented</span>
+      <span class="ftag" style="background:rgba(92,26,46,.5);border:1px solid rgba(196,120,138,.2);color:#f2dde2">Kompleks & Dalam</span>
+    </div></div>
+  </div>
+  <div style="background:rgba(92,26,46,.35);border-left:3px solid #8b2840;border:1px solid rgba(196,120,138,.15);border-left:3px solid #8b2840;padding:13px 15px;border-radius:0 4px 4px 0">
+    <div class="edu-title" style="color:#c4788a">Wine Process — 4 Tahap Fermentasi</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:9px">
+      <div style="text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(196,120,138,.12);border-radius:3px;padding:8px 4px"><div style="font-family:'Playfair Display',serif;font-size:14px;color:#c4788a;font-weight:700">01</div><div style="font-size:9px;color:rgba(232,221,213,.7);line-height:1.3;margin-top:2px">Petik buah matang sempurna</div></div>
+      <div style="text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(196,120,138,.12);border-radius:3px;padding:8px 4px"><div style="font-family:'Playfair Display',serif;font-size:14px;color:#c4788a;font-weight:700">02</div><div style="font-size:9px;color:rgba(232,221,213,.7);line-height:1.3;margin-top:2px">Fermentasi anaerob tertutup</div></div>
+      <div style="text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(196,120,138,.12);border-radius:3px;padding:8px 4px"><div style="font-family:'Playfair Display',serif;font-size:14px;color:#c4788a;font-weight:700">03</div><div style="font-size:9px;color:rgba(232,221,213,.7);line-height:1.3;margin-top:2px">Jemur utuh 4–6 minggu</div></div>
+      <div style="text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(196,120,138,.12);border-radius:3px;padding:8px 4px"><div style="font-family:'Playfair Display',serif;font-size:14px;color:#c4788a;font-weight:700">04</div><div style="font-size:9px;color:rgba(232,221,213,.7);line-height:1.3;margin-top:2px">Kupas & sortir akhir</div></div>
+    </div>
+    <div style="font-size:11px;color:rgba(232,221,213,.75);line-height:1.6">Fermentasi diperpanjang di lingkungan tanpa oksigen menciptakan senyawa kompleks yang menyerupai karakter wine — rasa yang tidak bisa dihasilkan oleh proses Washed atau Natural biasa.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#c4788a">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key" style="color:rgba(196,120,138,.7)">Acidity</span><div class="bar-track" style="background:rgba(255,255,255,.08)"><div class="bar-fill" style="width:65%;background:#8b2840"></div></div></div>
+      <div class="bar-row"><span class="bar-key" style="color:rgba(196,120,138,.7)">Body</span><div class="bar-track" style="background:rgba(255,255,255,.08)"><div class="bar-fill" style="width:85%;background:#8b2840"></div></div></div>
+      <div class="bar-row"><span class="bar-key" style="color:rgba(196,120,138,.7)">Sweetness</span><div class="bar-track" style="background:rgba(255,255,255,.08)"><div class="bar-fill" style="width:75%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key" style="color:rgba(196,120,138,.7)">Complexity</span><div class="bar-track" style="background:rgba(255,255,255,.08)"><div class="bar-fill" style="width:98%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key" style="color:rgba(196,120,138,.7)">Finish</span><div class="bar-track" style="background:rgba(255,255,255,.08)"><div class="bar-fill" style="width:92%;background:#8b2840"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#c4788a">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#c4788a"></div><span class="brew-text" style="color:#e8ddd5">V60 / Pour Over</span><span class="brew-note">Kompleksitas terbaik</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#c4788a"></div><span class="brew-text" style="color:#e8ddd5">Aeropress</span><span class="brew-note">Dark fruit kuat</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#c4788a"></div><span class="brew-text" style="color:#e8ddd5">Cold Brew</span><span class="brew-note">Wine-like maksimal</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#c4788a"></div><span class="brew-text" style="color:#e8ddd5">French Press</span><span class="brew-note">Body paling penuh</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:rgba(196,120,138,.35)"></div><span class="brew-text" style="color:rgba(232,221,213,.45);text-decoration:line-through">Latte / Susu</span><span class="brew-note">Karakter tertutup</span></div>
+    </div>
+  </div>
+  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(196,120,138,.15);border-radius:4px;padding:12px 14px;display:flex;gap:14px">
+    <div class="map-box" style="background:rgba(255,255,255,.06);border-color:rgba(196,120,138,.2);color:#c4788a">Peta<br>Aceh<br>Tengah</div>
+    <div><div style="font-family:'Playfair Display',serif;font-size:14px;color:#c4788a;margin-bottom:5px">Aceh Tengah, Aceh</div>
+      <div class="origin-detail" style="color:rgba(196,120,138,.65)"><strong style="color:#e8ddd5">Proses:</strong> Wine / Extended Fermentation</div>
+      <div class="origin-detail" style="color:rgba(196,120,138,.65)"><strong style="color:#e8ddd5">Fermentasi:</strong> Anaerob tertutup 48–72 jam</div>
+      <div class="origin-detail" style="color:rgba(196,120,138,.65)"><strong style="color:#e8ddd5">Produksi:</strong> Batch terbatas, musiman</div>
+    </div>
+  </div>
+  <div style="font-size:12px;line-height:1.8;font-style:italic;border-top:1px solid rgba(196,120,138,.15);padding-top:13px;color:rgba(232,221,213,.75);font-family:'Playfair Display',serif">"Ada kopi yang menyenangkan, ada yang mengesankan — dan ada yang mengubah cara Anda memahami kopi selamanya. Gayo Wine adalah yang ketiga. Lahir dari fermentasi panjang di dataran tinggi Aceh, ia membawa kompleksitas yang hanya bisa dicapai lewat waktu, kesabaran, dan keberanian untuk membiarkan alam bekerja sepenuhnya."</div>
+</div>
+<div style="background:#0e0c0a;padding:10px 32px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(196,120,138,.15)">
+  <span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(196,120,138,.5)">Robusta Series 01/04 — Mazaya Coffee</span>
+  <span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(196,120,138,.5)">Jl. Bustaman No. 162, Tembung</span>
+  <span style="font-family:'Playfair Display',serif;font-size:18px;color:#c4788a">05</span>
+</div>
+</div>
+
+
+<!-- PAGE 06: GAYO LONGBERRY -->
+<div class="pg" id="p8">
+<div class="top-bar" style="background:#7a4e28"><span class="tb-text" style="color:#d4a870">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#d4a870">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#7a4e28cc,#7a4e28,#a07040)">
+  <div class="img-box" style="color:#d4a870">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#d4a870">Arabica — Washed Process · Biji Panjang Langka</div>
+  <div class="hero-title">Gayo Longberry</div>
+  <div class="hero-sub" style="color:#d4a870">Aceh Tengah, Sumatera — Varietas Biji Terpanjang Gayo</div>
+  <div class="badges"><span class="badge" style="color:#d4a870">Single Origin</span><span class="badge" style="color:#d4a870">Washed</span><span class="badge" style="color:#d4a870">1.200–1.500 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#a07040">Flavor Notes</div>
+    <div style="border-left:2px solid #a07040;padding-left:14px"><div class="flavor-tags"><span class="ftag" style="background:#f4e4cc;color:#4e2e10">Citrus Cerah</span><span class="ftag" style="background:#f4e4cc;color:#4e2e10">Jeruk Bergamot</span><span class="ftag" style="background:#f4e4cc;color:#4e2e10">Dark Chocolate</span><span class="ftag" style="background:#f4e4cc;color:#4e2e10">Brown Sugar</span><span class="ftag" style="background:#f4e4cc;color:#4e2e10">Bright & Floral</span><span class="ftag" style="background:#f4e4cc;color:#4e2e10">Panjang & Kompleks</span></div></div>
+  </div>
+  <div class="edu-box" style="background:#f4e4cc;border-color:#a07040">
+    <div class="edu-title" style="color:#4e2e10">Biji 50% lebih panjang dari Gayo reguler, disortir manual</div>
+    <div class="edu-text">Bukan varietas berbeda — biji yang tumbuh lebih panjang secara alami. Lebih padat, roasting lebih merata.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#a07040">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:68%;background:#a07040"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:#a07040"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 3</span><div class="bar-track"><div class="bar-fill" style="width:85%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 4</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:#a07040"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#a07040">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#a07040"></div><span class="brew-text">V60 / Pour Over — Citrus & floral terbaik</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#a07040"></div><span class="brew-text">Japanese V60 (Iced) — Bergamot makin cerah</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#a07040"></div><span class="brew-text">Aeropress — Kompleksitas keluar</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Origin</div>
+    <div><div class="origin-name" style="color:#4e2e10">Aceh Tengah, Aceh</div>
+      <div class="origin-detail"><strong>Proses:</strong> Washed</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.200–1.500 mdpl</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Biji 50% lebih panjang dari Gayo reguler, disortir manual</div>
+    </div>
+  </div>
+  <div class="narasi">'Longberry adalah bukti bahwa alam Aceh menyimpan lebih banyak dari yang sudah kita ketahui. Di antara ribuan biji Gayo yang dipanen, tersembunyi biji-biji yang tumbuh lebih panjang — lebih padat, lebih merata saat diroasting, dan lebih kompleks saat diseduh.'</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">06</span></div>
+</div>
+
+<!-- PAGE 07: ARABICA LINTONG -->
+<div class="pg" id="p9">
+<div class="top-bar" style="background:#4a3020"><span class="tb-text" style="color:#c4a882">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#c4a882">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#4a3020cc,#4a3020,#6b4a30)">
+  <div class="img-box" style="color:#c4a882">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#c4a882">Arabica — Wet-Hulled Process · Giling Basah</div>
+  <div class="hero-title">Arabica Lintong</div>
+  <div class="hero-sub" style="color:#c4a882">Tapanuli Utara, Sumatera Utara</div>
+  <div class="badges"><span class="badge" style="color:#c4a882">Single Origin</span><span class="badge" style="color:#c4a882">Giling Basah</span><span class="badge" style="color:#c4a882">1.400 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#6b4a30">Flavor Notes</div>
+    <div style="border-left:2px solid #6b4a30;padding-left:14px"><div class="flavor-tags"><span class="ftag" style="background:#eae0d5;color:#4a3020">Dark Chocolate</span><span class="ftag" style="background:#eae0d5;color:#4a3020">Cedar</span><span class="ftag" style="background:#eae0d5;color:#4a3020">Herbal</span><span class="ftag" style="background:#eae0d5;color:#4a3020">Tembakau Ringan</span><span class="ftag" style="background:#eae0d5;color:#4a3020">Earthy</span><span class="ftag" style="background:#eae0d5;color:#4a3020">Full Body</span></div></div>
+  </div>
+  <div class="edu-box" style="background:#eae0d5;border-color:#6b4a30">
+    <div class="edu-title" style="color:#4a3020">Wet-hulled process khas Sumatera</div>
+    <div class="edu-text">Proses Giling Basah menghasilkan biji hijau yang lebih lunak dan kebiruan — menciptakan earthy, body penuh, dan acidity rendah yang menjadi identitas kopi Sumatera.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#6b4a30">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:22%;background:#6b4a30"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#6b4a30"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 3</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 4</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:85%;background:#6b4a30"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#6b4a30">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#6b4a30"></div><span class="brew-text">French Press — Body paling keluar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#6b4a30"></div><span class="brew-text">Espresso — Bold & earthy shot</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#6b4a30"></div><span class="brew-text">Cold Brew — Smooth & dark</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Origin</div>
+    <div><div class="origin-name" style="color:#4a3020">Tapanuli Utara, Sumatera Utara</div>
+      <div class="origin-detail"><strong>Proses:</strong> Giling Basah</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.400 mdpl</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Wet-hulled process khas Sumatera</div>
+    </div>
+  </div>
+  <div class="narasi">'Lintong adalah bahasa ibu kopi Sumatera. Tumbuh di Tapanuli Utara, diproses dengan Giling Basah yang sudah diwariskan turun-temurun, ia membawa karakter yang tidak bisa dipalsukan — earthy yang dalam, body yang berat, dan finish panjang seperti sore hari di pegunungan.'</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">07</span></div>
+</div>
+
+<!-- PAGE 08: ARABICA SIDIKALANG -->
+<div class="pg" id="p10">
+<div class="top-bar" style="background:#4e3018"><span class="tb-text" style="color:#c8a878">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#c8a878">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#4e3018cc,#4e3018,#7a5230)">
+  <div class="img-box" style="color:#c8a878">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#c8a878">Arabica — Wet-Hulled Process · Giling Basah</div>
+  <div class="hero-title">Arabica Sidikalang</div>
+  <div class="hero-sub" style="color:#c8a878">Dairi, Sumatera Utara — Sumatera yang Lebih Ringan</div>
+  <div class="badges"><span class="badge" style="color:#c8a878">Single Origin</span><span class="badge" style="color:#c8a878">Giling Basah</span><span class="badge" style="color:#c8a878">1.400 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#7a5230">Flavor Notes</div>
+    <div style="border-left:2px solid #7a5230;padding-left:14px"><div class="flavor-tags"><span class="ftag" style="background:#ede4d6;color:#4e3018">Cokelat Susu</span><span class="ftag" style="background:#ede4d6;color:#4e3018">Karamel</span><span class="ftag" style="background:#ede4d6;color:#4e3018">Floral Ringan</span><span class="ftag" style="background:#ede4d6;color:#4e3018">Earthy Halus</span><span class="ftag" style="background:#ede4d6;color:#4e3018">Brown Sugar</span><span class="ftag" style="background:#ede4d6;color:#4e3018">Smooth & Bersih</span></div></div>
+  </div>
+  <div class="edu-box" style="background:#ede4d6;border-color:#7a5230">
+    <div class="edu-title" style="color:#4e3018">Paling balanced di antara trio Sumatera</div>
+    <div class="edu-text">Jika Lintong adalah earthy yang klasik dan Mandheling yang bold, Sidikalang adalah titik tengah yang seimbang — lebih clean, sedikit lebih floral, paling accessible.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#7a5230">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:38%;background:#7a5230"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:70%;background:#7a5230"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 3</span><div class="bar-track"><div class="bar-fill" style="width:72%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 4</span><div class="bar-track"><div class="bar-fill" style="width:92%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:68%;background:#7a5230"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#7a5230">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7a5230"></div><span class="brew-text">Espresso / Latte — Paling direkomendasikan</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7a5230"></div><span class="brew-text">V60 / Pour Over — Floral lebih keluar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7a5230"></div><span class="brew-text">Cold Brew — Smooth & ringan</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Origin</div>
+    <div><div class="origin-name" style="color:#4e3018">Dairi, Sumatera Utara</div>
+      <div class="origin-detail"><strong>Proses:</strong> Giling Basah</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.400 mdpl</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Paling balanced di antara trio Sumatera</div>
+    </div>
+  </div>
+  <div class="narasi">'Di antara kopi-kopi Sumatera yang bold dan menuntut, Sidikalang hadir sebagai jembatan yang tulus. Ia tidak mencoba mendominasi — ia mengajak Anda masuk perlahan ke dalam dunia earthy Sumatera. Kopi pertama yang membuat seseorang jatuh cinta dengan Sumatera seringkali adalah Sidikalang.'</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">08</span></div>
+</div>
+
+<!-- PAGE 09: ARABICA MANDHELING -->
+<div class="pg" id="p11">
+<div class="top-bar" style="background:#2c2820"><span class="tb-text" style="color:#b8a088">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#b8a088">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#2c2820cc,#2c2820,#4a3e30)">
+  <div class="img-box" style="color:#b8a088">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#b8a088">Arabica — Wet-Hulled Process · Giling Basah</div>
+  <div class="hero-title">Arabica Mandheling</div>
+  <div class="hero-sub" style="color:#b8a088">Sumatera Utara — Puncak Karakter Sumatera</div>
+  <div class="badges"><span class="badge" style="color:#b8a088">Single Origin</span><span class="badge" style="color:#b8a088">Giling Basah</span><span class="badge" style="color:#b8a088">1.200–1.500 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#4a3e30">Flavor Notes</div>
+    <div style="border-left:2px solid #4a3e30;padding-left:14px"><div class="flavor-tags"><span class="ftag" style="background:#e4ddd4;color:#2c2820">Earthy Kuat</span><span class="ftag" style="background:#e4ddd4;color:#2c2820">Dark Chocolate</span><span class="ftag" style="background:#e4ddd4;color:#2c2820">Tembakau</span><span class="ftag" style="background:#e4ddd4;color:#2c2820">Rempah-Rempah</span><span class="ftag" style="background:#e4ddd4;color:#2c2820">Forest Floor</span><span class="ftag" style="background:#e4ddd4;color:#2c2820">Smoky</span></div></div>
+  </div>
+  <div class="edu-box" style="background:#e4ddd4;border-color:#4a3e30">
+    <div class="edu-title" style="color:#2c2820">Paling bold di antara trio Sumatera</div>
+    <div class="edu-text">Mandheling memiliki acidity paling rendah dan body paling berat. Bukan untuk semua orang — dan justru itulah yang membuatnya istimewa bagi yang memilihnya.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#4a3e30">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:12%;background:#4a3e30"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:98%;background:#4a3e30"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 3</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 4</span><div class="bar-track"><div class="bar-fill" style="width:98%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:#4a3e30"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#4a3e30">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e30"></div><span class="brew-text">French Press — Body maksimal</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e30"></div><span class="brew-text">Moka Pot — Intens & klasik</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e30"></div><span class="brew-text">Tubruk — Cara paling autentik</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Origin</div>
+    <div><div class="origin-name" style="color:#2c2820">Sumatera Utara (Mandailing Natal)</div>
+      <div class="origin-detail"><strong>Proses:</strong> Giling Basah</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.200–1.500 mdpl</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Paling bold di antara trio Sumatera</div>
+    </div>
+  </div>
+  <div class="narasi">'Mandheling tidak datang untuk menyenangkan semua orang — ia datang untuk mereka yang benar-benar siap. Earthy yang dalam, body yang berat seperti tanah basah setelah hujan, dan finish yang bertahan lama. Bagi mereka yang memilihnya, tidak ada kopi lain yang cukup.'</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">09</span></div>
+</div>
+
+<!-- PAGE 10: ARABICA KERINCI -->
+<div class="pg" id="p12">
+<div class="top-bar" style="background:#2e4228"><span class="tb-text" style="color:#a8c49a">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#a8c49a">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#2e4228cc,#2e4228,#4a7050)">
+  <div class="img-box" style="color:#a8c49a">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#a8c49a">Arabica — Washed Process · Ketinggian Ekstrem</div>
+  <div class="hero-title">Arabica Kerinci</div>
+  <div class="hero-sub" style="color:#a8c49a">Gunung Kerinci, Jambi — Tertinggi di Sumatera</div>
+  <div class="badges"><span class="badge" style="color:#a8c49a">Single Origin</span><span class="badge" style="color:#a8c49a">Washed</span><span class="badge" style="color:#a8c49a">1.400–1.600 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#4a7050">Flavor Notes</div>
+    <div style="border-left:2px solid #4a7050;padding-left:14px"><div class="flavor-tags"><span class="ftag" style="background:#dff0d8;color:#2e4228">Melati</span><span class="ftag" style="background:#dff0d8;color:#2e4228">Jasmine</span><span class="ftag" style="background:#dff0d8;color:#2e4228">Citrus Segar</span><span class="ftag" style="background:#dff0d8;color:#2e4228">Cokelat Susu</span><span class="ftag" style="background:#dff0d8;color:#2e4228">Bersih & Bright</span><span class="ftag" style="background:#dff0d8;color:#2e4228">Floral Elegan</span></div></div>
+  </div>
+  <div class="edu-box" style="background:#dff0d8;border-color:#4a7050">
+    <div class="edu-title" style="color:#2e4228">Ketinggian 1.400–1.600 mdpl — tertinggi di Sumatera</div>
+    <div class="edu-text">Semakin tinggi kebun kopi, semakin dingin suhunya — biji matang lebih lambat, lebih padat, dan menyimpan lebih banyak senyawa aromatik. Inilah mengapa Kerinci memiliki floral dan citrus yang unik.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#4a7050">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:62%;background:#4a7050"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:52%;background:#4a7050"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 3</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 4</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:70%;background:#4a7050"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#4a7050">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a7050"></div><span class="brew-text">V60 / Pour Over — Floral paling keluar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a7050"></div><span class="brew-text">Japanese V60 (Iced) — Bergamot makin cerah</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a7050"></div><span class="brew-text">Cold Brew — Floral & segar dingin</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Origin</div>
+    <div><div class="origin-name" style="color:#2e4228">Gunung Kerinci, Jambi</div>
+      <div class="origin-detail"><strong>Proses:</strong> Washed</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.400–1.600 mdpl</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Ketinggian 1.400–1.600 mdpl — tertinggi di Sumatera</div>
+    </div>
+  </div>
+  <div class="narasi">'Di lereng gunung berapi tertinggi Sumatera, di mana kabut turun setiap pagi dan suhu malam bisa menyentuh 12 derajat, biji kopi matang dengan sangat perlahan. Kesabaran alam itu tersimpan dalam setiap cangkir Kerinci — floral yang bersih, citrus yang segar, dan keanggunan yang tidak pernah berteriak.'</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">10</span></div>
+</div>
+
+<!-- PAGE 11: BALI KINTAMANI -->
+<div class="pg" id="p13">
+<div class="top-bar" style="background:#8a3a18"><span class="tb-text" style="color:#e8a878">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#e8a878">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#8a3a18cc,#8a3a18,#c4622d)">
+  <div class="img-box" style="color:#e8a878">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#e8a878">Arabica — Washed Process · Sistem Subak</div>
+  <div class="hero-title">Bali Kintamani</div>
+  <div class="hero-sub" style="color:#e8a878">Kintamani, Bangli, Bali — Warisan Budaya Dunia</div>
+  <div class="badges"><span class="badge" style="color:#e8a878">Single Origin</span><span class="badge" style="color:#e8a878">Washed</span><span class="badge" style="color:#e8a878">1.200–1.700 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#c4622d">Flavor Notes</div>
+    <div style="border-left:2px solid #c4622d;padding-left:14px"><div class="flavor-tags"><span class="ftag" style="background:#fae8d8;color:#8a3a18">Jeruk Manis</span><span class="ftag" style="background:#fae8d8;color:#8a3a18">Lemon Zest</span><span class="ftag" style="background:#fae8d8;color:#8a3a18">Cokelat Putih</span><span class="ftag" style="background:#fae8d8;color:#8a3a18">Floral Ringan</span><span class="ftag" style="background:#fae8d8;color:#8a3a18">Bersih & Segar</span><span class="ftag" style="background:#fae8d8;color:#8a3a18">Natural Sweet</span></div></div>
+  </div>
+  <div class="edu-box" style="background:#fae8d8;border-color:#c4622d">
+    <div class="edu-title" style="color:#8a3a18">Sistem Subak UNESCO 2012</div>
+    <div class="edu-text">Sistem irigasi Subak yang diwariskan ribuan tahun — mengaliri kebun kopi dengan air bersih pegunungan Batur. Tanah vulkanik Gunung Batur memperkaya mineral secara alami.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#c4622d">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:70%;background:#c4622d"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:50%;background:#c4622d"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 3</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 4</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:85%;background:#c4622d"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#c4622d">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#c4622d"></div><span class="brew-text">V60 / Pour Over — Citrus paling keluar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#c4622d"></div><span class="brew-text">Japanese V60 (Iced) — Paling direkomendasikan</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#c4622d"></div><span class="brew-text">Cold Brew — Segar & manis alami</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Origin</div>
+    <div><div class="origin-name" style="color:#8a3a18">Kintamani, Bangli, Bali</div>
+      <div class="origin-detail"><strong>Proses:</strong> Washed</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.200–1.700 mdpl</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Sistem Subak UNESCO 2012</div>
+    </div>
+  </div>
+  <div class="narasi">'Kintamani tidak hanya menawarkan rasa — ia menawarkan konteks. Di tepi kaldera Batur, di antara petani yang masih mengikuti ritual Subak sebelum musim tanam, lahirlah kopi dengan citrus yang bersih dan sweetness yang tulus.'</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">11</span></div>
+</div>
+
+<!-- PAGE 12: JAVA IJEN -->
+<div class="pg" id="p14">
+<div class="top-bar" style="background:#183448"><span class="tb-text" style="color:#88bad4">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#88bad4">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#183448cc,#183448,#2a5070)">
+  <div class="img-box" style="color:#88bad4">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#88bad4">Arabica — Washed Process · Kawah Vulkanik</div>
+  <div class="hero-title">Java Ijen</div>
+  <div class="hero-sub" style="color:#88bad4">Kawah Ijen, Banyuwangi, Jawa Timur</div>
+  <div class="badges"><span class="badge" style="color:#88bad4">Single Origin</span><span class="badge" style="color:#88bad4">Washed</span><span class="badge" style="color:#88bad4">1.400–1.900 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#2a5070">Flavor Notes</div>
+    <div style="border-left:2px solid #2a5070;padding-left:14px"><div class="flavor-tags"><span class="ftag" style="background:#d8eaf4;color:#183448">Herbal Segar</span><span class="ftag" style="background:#d8eaf4;color:#183448">Spice Ringan</span><span class="ftag" style="background:#d8eaf4;color:#183448">Dark Chocolate</span><span class="ftag" style="background:#d8eaf4;color:#183448">Cokelat Susu</span><span class="ftag" style="background:#d8eaf4;color:#183448">Earthy Bersih</span><span class="ftag" style="background:#d8eaf4;color:#183448">Balanced</span></div></div>
+  </div>
+  <div class="edu-box" style="background:#d8eaf4;border-color:#2a5070">
+    <div class="edu-title" style="color:#183448">Blue Fire — hanya ada 2 di dunia</div>
+    <div class="edu-text">Tanah di sekitar Kawah Ijen kaya sulfur dan mineral vulkanik unik. Mineral inilah yang memberikan karakter herbal dan spice ringan yang khas — sesuatu yang tidak bisa direplikasi di tempat lain.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#2a5070">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:48%;background:#2a5070"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:#2a5070"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 3</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 4</span><div class="bar-track"><div class="bar-fill" style="width:85%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:72%;background:#2a5070"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#2a5070">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#2a5070"></div><span class="brew-text">V60 / Pour Over — Herbal paling keluar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#2a5070"></div><span class="brew-text">French Press — Body medium-full</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#2a5070"></div><span class="brew-text">Cold Brew — Smooth herbal dingin</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Origin</div>
+    <div><div class="origin-name" style="color:#183448">Kawah Ijen, Banyuwangi, Jawa Timur</div>
+      <div class="origin-detail"><strong>Proses:</strong> Washed</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.400–1.900 mdpl</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Blue Fire — hanya ada 2 di dunia</div>
+    </div>
+  </div>
+  <div class="narasi">'Di tanah yang setiap malamnya menyala biru karena gas belerang yang terbakar, tumbuh kopi dengan karakter yang tidak ada duanya. Mineral vulkanik Ijen meresap ke akar, membentuk profil herbal dan spice yang bersih — sebuah tanda tangan rasa dari gunung berapi paling misterius di Jawa.'</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">12</span></div>
+</div>
+
+<!-- PAGE 13: TORAJA KALOSI -->
+<div class="pg" id="p15">
+<div class="top-bar" style="background:#4e2040"><span class="tb-text" style="color:#c490a8">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#c490a8">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#4e2040cc,#4e2040,#7a3060)">
+  <div class="img-box" style="color:#c490a8">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#c490a8">Arabica — Wet-Hulled Process · Giling Basah</div>
+  <div class="hero-title">Toraja Kalosi</div>
+  <div class="hero-sub" style="color:#c490a8">Tana Toraja, Sulawesi Selatan — Kopi Kerajaan Nusantara</div>
+  <div class="badges"><span class="badge" style="color:#c490a8">Single Origin</span><span class="badge" style="color:#c490a8">Giling Basah</span><span class="badge" style="color:#c490a8">1.400–2.100 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#7a3060">Flavor Notes</div>
+    <div style="border-left:2px solid #7a3060;padding-left:14px"><div class="flavor-tags"><span class="ftag" style="background:#eed8e8;color:#4e2040">Plum</span><span class="ftag" style="background:#eed8e8;color:#4e2040">Anggur Gelap</span><span class="ftag" style="background:#eed8e8;color:#4e2040">Dark Cherry</span><span class="ftag" style="background:#eed8e8;color:#4e2040">Dark Chocolate</span><span class="ftag" style="background:#eed8e8;color:#4e2040">Cedar</span><span class="ftag" style="background:#eed8e8;color:#4e2040">Kompleks & Dalam</span></div></div>
+  </div>
+  <div class="edu-box" style="background:#eed8e8;border-color:#7a3060">
+    <div class="edu-title" style="color:#4e2040">Kopi ekspor era VOC abad ke-17</div>
+    <div class="edu-text">Sebelum ada specialty coffee, Toraja sudah ada. Ratusan tahun tumbuh di pegunungan Sulawesi, kopi ini pernah dimonopoli Belanda karena nilainya terlalu tinggi untuk dibiarkan bebas diperdagangkan.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#7a3060">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:40%;background:#7a3060"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:#7a3060"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 3</span><div class="bar-track"><div class="bar-fill" style="width:70%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 4</span><div class="bar-track"><div class="bar-fill" style="width:92%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#7a3060"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#7a3060">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7a3060"></div><span class="brew-text">French Press — Dark fruit maksimal</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7a3060"></div><span class="brew-text">V60 / Pour Over — Kompleksitas keluar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#7a3060"></div><span class="brew-text">Cold Brew — Smooth dark & dalam</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Origin</div>
+    <div><div class="origin-name" style="color:#4e2040">Tana Toraja & Enrekang, Sulawesi Selatan</div>
+      <div class="origin-detail"><strong>Proses:</strong> Giling Basah</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.400–2.100 mdpl</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Kopi ekspor era VOC abad ke-17</div>
+    </div>
+  </div>
+  <div class="narasi">'Sebelum ada specialty coffee, sebelum ada third wave — Toraja sudah ada. Ratusan tahun tumbuh di pegunungan Sulawesi yang tertinggi, diseduh dalam ritual Rambu Solo, dibawa ke meja-meja kerajaan Eropa. Toraja Kalosi bukan sekadar kopi terbaik Sulawesi. Ia adalah salah satu kopi terbaik yang pernah tumbuh di bumi Indonesia.'</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">13</span></div>
+</div>
+
+<!-- PAGE 14: PAPUA WAMENA -->
+<div class="pg" id="p16">
+<div class="top-bar" style="background:#1a2e1c"><span class="tb-text" style="color:#90b898">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#90b898">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#1a2e1ccc,#1a2e1c,#4a7050)">
+  <div class="img-box" style="color:#90b898">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#90b898">Arabica — Washed Process · Tumbuh Liar</div>
+  <div class="hero-title">Papua Wamena</div>
+  <div class="hero-sub" style="color:#90b898">Lembah Baliem, Jayawijaya, Papua — Kopi Paling Terpencil Indonesia</div>
+  <div class="badges"><span class="badge" style="color:#90b898">Single Origin</span><span class="badge" style="color:#90b898">Washed</span><span class="badge" style="color:#90b898">1.600–2.000 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#4a7050">Flavor Notes</div>
+    <div style="border-left:2px solid #4a7050;padding-left:14px"><div class="flavor-tags"><span class="ftag" style="background:#d8ead8;color:#1a2e1c">Earthy Dalam</span><span class="ftag" style="background:#d8ead8;color:#1a2e1c">Tembakau</span><span class="ftag" style="background:#d8ead8;color:#1a2e1c">Dark Chocolate</span><span class="ftag" style="background:#d8ead8;color:#1a2e1c">Herbal Liar</span><span class="ftag" style="background:#d8ead8;color:#1a2e1c">Tropical Fruit</span><span class="ftag" style="background:#d8ead8;color:#1a2e1c">Wild & Bold</span></div></div>
+  </div>
+  <div class="edu-box" style="background:#d8ead8;border-color:#4a7050">
+    <div class="edu-title" style="color:#1a2e1c">100% Organik Alami — Zero Pesticide</div>
+    <div class="edu-text">Kopi Wamena tumbuh secara semi-liar di lereng Pegunungan Jayawijaya tanpa intervensi kimia apapun. Setiap batch berbeda karena tidak ada kontrol industri — bukan kelemahan, ini autentisitas.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#4a7050">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:25%;background:#4a7050"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:#4a7050"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 3</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 4</span><div class="bar-track"><div class="bar-fill" style="width:95%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:#4a7050"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#4a7050">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a7050"></div><span class="brew-text">French Press — Wild character maksimal</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a7050"></div><span class="brew-text">Moka Pot — Bold & intense</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a7050"></div><span class="brew-text">Tubruk — Paling autentik</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Origin</div>
+    <div><div class="origin-name" style="color:#1a2e1c">Lembah Baliem, Jayawijaya, Papua</div>
+      <div class="origin-detail"><strong>Proses:</strong> Washed</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 1.600–2.000 mdpl</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> 100% Organik Alami — Zero Pesticide</div>
+    </div>
+  </div>
+  <div class="narasi">'Ada tempat di Indonesia yang belum pernah disentuh industri — di mana kopi tumbuh bukan karena strategi bisnis, tapi karena tanah dan waktu membiarkannya tumbuh. Lembah Baliem adalah tempat itu. Tumbuh kopi yang paling jujur yang bisa Anda temukan. Tidak sempurna. Tapi sangat nyata.'</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">14</span></div>
+</div>
+
+<!-- PAGE 15: ARABICA BRAZIL -->
+<div class="pg" id="p17">
+<div class="top-bar" style="background:#6a4e1c"><span class="tb-text" style="color:#d4b878">Coffee Origin Series</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#d4b878">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#6a4e1ccc,#6a4e1c,#9c7a3c)">
+  <div class="img-box" style="color:#d4b878">Paste foto<br>AI generated<br>di sini</div>
+  <div class="hero-label" style="color:#d4b878">Arabica — Natural Process · Satu-Satunya Non-Indonesia</div>
+  <div class="hero-title">Arabica Brazil</div>
+  <div class="hero-sub" style="color:#d4b878">Minas Gerais, Brazil — Produsen Kopi Terbesar Dunia</div>
+  <div class="badges"><span class="badge" style="color:#d4b878">Single Origin</span><span class="badge" style="color:#d4b878">Natural / Dry Process</span><span class="badge" style="color:#d4b878">800–1.200 mdpl</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#9c7a3c">Flavor Notes</div>
+    <div style="border-left:2px solid #9c7a3c;padding-left:14px"><div class="flavor-tags"><span class="ftag" style="background:#f4e8cc;color:#6a4e1c">Cokelat Susu</span><span class="ftag" style="background:#f4e8cc;color:#6a4e1c">Hazelnut</span><span class="ftag" style="background:#f4e8cc;color:#6a4e1c">Karamel</span><span class="ftag" style="background:#f4e8cc;color:#6a4e1c">Walnut</span><span class="ftag" style="background:#f4e8cc;color:#6a4e1c">Manis Alami</span><span class="ftag" style="background:#f4e8cc;color:#6a4e1c">Sangat Smooth</span></div></div>
+  </div>
+  <div class="edu-box" style="background:#f4e8cc;border-color:#9c7a3c">
+    <div class="edu-title" style="color:#6a4e1c">Satu-satunya origin non-Indonesia</div>
+    <div class="edu-text">Brazil menggunakan Natural Process (Dry Process) untuk mayoritas produksinya — buah dijemur utuh. Hasilnya profil yang sangat smooth, nutty, dan rendah asam yang menjadi standar rasa kopi dunia.</div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#9c7a3c">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:15%;background:#9c7a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:60%;background:#9c7a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 3</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Metric 4</span><div class="bar-track"><div class="bar-fill" style="width:95%;background:#c49a3c"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:78%;background:#9c7a3c"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#9c7a3c">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#9c7a3c"></div><span class="brew-text">Espresso / Latte — Crema paling tebal</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#9c7a3c"></div><span class="brew-text">French Press — Nutty & smooth penuh</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#9c7a3c"></div><span class="brew-text">Moka Pot — Karamel kuat</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Origin</div>
+    <div><div class="origin-name" style="color:#6a4e1c">Minas Gerais, Brazil</div>
+      <div class="origin-detail"><strong>Proses:</strong> Natural / Dry Process</div>
+      <div class="origin-detail"><strong>Ketinggian:</strong> 800–1.200 mdpl</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Satu-satunya origin non-Indonesia</div>
+    </div>
+  </div>
+  <div class="narasi">'Di antara semua kopi yang kami jual, Brazil adalah yang paling dikenal dunia — dan justru itulah nilainya. Bukan karena eksotis, tapi karena familiar. Smooth seperti cokelat susu hangat, manis seperti karamel yang tidak berlebihan. Brazil bukan pelarian dari kopi Indonesia — ia adalah jangkar yang membuat Anda bisa kembali ke sini kapan saja.'</div>
+</div>
+<div class="bottom-bar"><span class="bb-text">Mazaya Coffee — Cafe & Roastery</span><span class="bb-text">Jl. Bustaman No. 162, Tembung</span><span class="bb-num">15</span></div>
+</div>
+
+<!-- PAGE 16: ROBUSTA GAYO EK1 -->
+<div class="pg" id="p18">
+<div class="top-bar" style="background:#2a2420;border-bottom:1px solid rgba(168,144,128,.2)"><span class="tb-text" style="color:#a89080">Robusta Series — 01 of 04</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#a89080">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#0a0806,#141008,#1e1810,#2a2420,#4a3e38)">
+  <div class="img-box" style="color:#a89080;background:rgba(168,144,128,.08);border-color:rgba(168,144,128,.22)">Paste foto<br>AI generated<br>di sini</div>
+  <div style="display:inline-block;background:rgba(212,160,32,.15);border:1px solid rgba(212,160,32,.4);color:#d4a020;font-size:8px;letter-spacing:3px;text-transform:uppercase;padding:3px 10px;border-radius:2px;margin-bottom:10px">Seri Robusta Mazaya — Pembuka</div>
+  <div class="hero-label" style="color:#a89080">Robusta — EK1 Grade · Kafein Tinggi</div>
+  <div class="hero-title">Robusta<br>Gayo EK1</div>
+  <div class="hero-sub" style="color:rgba(168,144,128,.85)">Aceh Tengah, Sumatera — Robusta Terbaik dari Tanah Gayo</div>
+  <div class="badges"><span class="badge special" style="background:rgba(212,160,32,.18);border-color:#d4a020;color:#d4a020">2× Kafein Arabica</span><span class="badge" style="color:#a89080;border-color:rgba(168,144,128,.38)">EK1 — Grade Terbaik</span><span class="badge" style="color:#a89080;border-color:rgba(168,144,128,.38)">Gayo Origin</span></div>
+</div>
+<div class="body-area" style="background:#f5f0e8">
+  <div><div class="section-label" style="color:#4a3e38">Flavor Notes</div>
+    <div style="border-left:2px solid #4a3e38;padding-left:14px"><div class="flavor-tags">
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Earthy Kuat</span><span class="ftag" style="background:#e0d8d0;color:#2a2420">Dark Chocolate Pahit</span>
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Tembakau</span><span class="ftag" style="background:#e0d8d0;color:#2a2420">Woody</span>
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Thick Body</span><span class="ftag" style="background:#e0d8d0;color:#2a2420">Bold & Lingering</span>
+    </div></div>
+  </div>
+  <div class="edu-box" style="background:#ede8e4;border-color:#4a3e38">
+    <div class="edu-title" style="color:#2a2420">Robusta vs Arabica — Perbedaan Mendasar</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px">
+      <div style="background:rgba(42,36,32,.07);border:1px solid rgba(42,36,32,.14);border-radius:3px;padding:9px">
+        <div style="font-size:10px;font-weight:700;color:#8c7b6e;margin-bottom:6px">Arabica (hal. 01–15)</div>
+        <div style="font-size:10px;color:#8c7b6e;line-height:1.8">Kafein: 1.2–1.5%<br>Body: Medium–Full<br>Acidity: Medium–Bright<br>Crema: Tipis<br>Harga: Lebih tinggi</div>
+      </div>
+      <div style="background:rgba(42,36,32,.12);border:1.5px solid #4a3e38;border-radius:3px;padding:9px">
+        <div style="font-size:10px;font-weight:700;color:#2a2420;margin-bottom:6px">Robusta — Keunggulannya</div>
+        <div style="font-size:10px;color:#2a2420;line-height:1.8">Kafein: <strong style="color:#d4a020">2.0–2.7% ↑↑</strong><br>Body: Sangat berat ↑<br>Acidity: Sangat rendah ↓<br>Crema: <strong style="color:#d4a020">Tebal & tahan lama ↑</strong><br>Harga: Lebih terjangkau ↓</div>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:9px;color:#8c7b6e">Arabica ±1.2%</span><span style="font-size:9px;font-weight:700;color:#d4a020">Robusta Gayo ±2.4% — hampir 2× lipat</span></div>
+      <div class="bar-track" style="height:5px;margin-bottom:3px"><div class="bar-fill" style="width:42%;background:#a08060"></div></div>
+      <div class="bar-track" style="height:5px"><div class="bar-fill" style="width:88%;background:#d4a020"></div></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#4a3e38">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:8%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:95%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Earthiness</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Caffeine</span><div class="bar-track"><div class="bar-fill" style="width:92%;background:#d4a020"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:85%;background:#4a3e38"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#4a3e38">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Espresso base</span><span class="brew-note">Crema paling tebal</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Blend dengan Arabica</span><span class="brew-note">Tambah kick & body</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Kopi susu / Latte</span><span class="brew-note">Rasa kopi tidak hilang</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Tubruk / kopi hitam</span><span class="brew-note">Cara paling autentik</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Cold Brew</span><span class="brew-note">Caffeinated & smooth</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Aceh<br>Tengah</div>
+    <div><div class="origin-name" style="color:#2a2420">Aceh Tengah, Aceh</div>
+      <div class="origin-detail"><strong>Spesies:</strong> Coffea Canephora (Robusta)</div>
+      <div class="origin-detail"><strong>Grade:</strong> EK1 — tertinggi untuk Robusta</div>
+      <div class="origin-detail"><strong>Kafein:</strong> ±2.0–2.7% (vs Arabica ±1.2–1.5%)</div>
+      <div class="origin-detail"><strong>Keunggulan:</strong> Crema tebal, body paling berat</div>
+    </div>
+  </div>
+  <div class="narasi">"Robusta tidak kalah dari Arabica — ia hanya berbeda. Di mana Arabica menawarkan nuansa dan keanggunan, Robusta Gayo EK1 menawarkan keteguhan. Body yang tebal, kafein yang terasa dari tegukan pertama, dan crema yang bertahan lama di permukaan espresso. Ini adalah kopi untuk mereka yang tidak ingin berdebat dengan kopinya — mereka ingin merasakan kopi."</div>
+</div>
+<div style="background:#2a2420;padding:10px 32px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(168,144,128,.2)">
+  <span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(168,144,128,.6)">Robusta Series 01/04 — Mazaya Coffee</span>
+  <span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(168,144,128,.6)">Jl. Bustaman No. 162, Tembung</span>
+  <span style="font-family:'Playfair Display',serif;font-size:18px;color:#a89080">16</span>
+</div>
+</div>
+
+
+<!-- ROBUSTA 17,18,19 — compact template -->
+<div class="pg" id="p19">
+<div class="top-bar" style="background:#2a2420;border-bottom:1px solid rgba(168,144,128,.2)"><span class="tb-text" style="color:#a89080">Robusta Series — 02 of 04</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#a89080">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#0a0806,#1e1810,#2a2420,#4a3e38)">
+  <div class="img-box" style="color:#a89080;background:rgba(168,144,128,.08);border-color:rgba(168,144,128,.22)">Paste foto<br>di sini</div>
+  <div style="display:inline-block;background:rgba(212,160,32,.15);border:1px solid rgba(212,160,32,.4);color:#d4a020;font-size:8px;letter-spacing:3px;text-transform:uppercase;padding:3px 10px;border-radius:2px;margin-bottom:10px">Seri Robusta Mazaya — 02</div>
+  <div class="hero-label" style="color:#a89080">Robusta — EK1 Grade · Karakter Lebih Bersih</div>
+  <div class="hero-title">Robusta<br>Sidikalang EK1</div>
+  <div class="hero-sub" style="color:rgba(168,144,128,.85)">Dairi, Sumatera Utara — Robusta Paling Balanced di Koleksi</div>
+  <div class="badges"><span class="badge special" style="background:rgba(212,160,32,.18);border-color:#d4a020;color:#d4a020">2× Kafein Arabica</span><span class="badge" style="color:#a89080;border-color:rgba(168,144,128,.38)">EK1 — Grade Terbaik</span><span class="badge" style="color:#a89080;border-color:rgba(168,144,128,.38)">Most Balanced</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#4a3e38">Flavor Notes</div>
+    <div style="border-left:2px solid #4a3e38;padding-left:14px"><div class="flavor-tags">
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Earthy Medium</span><span class="ftag" style="background:#e0d8d0;color:#2a2420">Dark Chocolate</span>
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Tembakau Ringan</span><span class="ftag" style="background:#e0d8d0;color:#2a2420">Woody</span>
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Sedikit Lebih Bersih</span><span class="ftag" style="background:#e0d8d0;color:#2a2420">Heavy Body</span>
+    </div></div>
+  </div>
+  <div class="edu-box" style="background:#ede8e4;border-color:#4a3e38">
+    <div class="edu-title" style="color:#2a2420">Sidikalang vs Robusta Lain di Koleksi Mazaya</div>
+    <div class="trio-row">
+      <div class="trio-item" style="background:#e8e0d8"><div class="trio-name">Gayo EK1</div><div class="trio-desc">Earthy paling kuat, body terberat</div><div style="font-size:8px;background:#e0d8d0;border-radius:2px;padding:1px 5px;margin-top:3px;display:inline-block;color:#4a3e38">Most Bold</div></div>
+      <div class="trio-item" style="background:#ede8e4;border:1.5px solid #4a3e38"><div class="trio-name act">Sidikalang ← Kita</div><div class="trio-desc">Earthy lebih bersih, dark chocolate</div><div style="font-size:8px;background:rgba(212,160,32,.12);border-radius:2px;padding:1px 5px;margin-top:3px;display:inline-block;color:#d4a020">Most Balanced</div></div>
+      <div class="trio-item" style="background:#e8e0d8"><div class="trio-name">Lampung EK1</div><div class="trio-desc">Smoky & spice ringan, khas</div><div style="font-size:8px;background:#e0d8d0;border-radius:2px;padding:1px 5px;margin-top:3px;display:inline-block;color:#4a3e38">Most Smoky</div></div>
+      <div class="trio-item" style="background:#e8e0d8"><div class="trio-name">Java EK1</div><div class="trio-desc">Paling clean, herbal ringan</div><div style="font-size:8px;background:#e0d8d0;border-radius:2px;padding:1px 5px;margin-top:3px;display:inline-block;color:#4a3e38">Most Clean</div></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#4a3e38">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Earthiness</span><div class="bar-track"><div class="bar-fill" style="width:75%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Caffeine</span><div class="bar-track"><div class="bar-fill" style="width:85%;background:#d4a020"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Smoothness</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:#c49a3c"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#4a3e38">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Espresso base — Crema tebal & stabil</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Blend 30:70 Arabica — Ratio ideal</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Kopi susu / Latte — Tidak hilang</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">French Press — Body heavy, clean</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Tubruk — Khas & autentik</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Dairi<br>Sumut</div>
+    <div><div class="origin-name" style="color:#2a2420">Dairi, Sumatera Utara</div>
+      <div class="origin-detail"><strong>Grade:</strong> EK1 — tertinggi untuk Robusta</div>
+      <div class="origin-detail"><strong>Kafein:</strong> ±2.0–2.4%</div>
+      <div class="origin-detail"><strong>Keunggulan:</strong> Paling balanced di antara 4 Robusta</div>
+    </div>
+  </div>
+  <div class="narasi">"Jika Robusta Gayo adalah pelari yang memimpin dengan agresif, Robusta Sidikalang adalah yang berlari dengan teknik. Karakter earthy-nya masih kuat — cukup untuk membuktikan dirinya sebagai Robusta — tapi ada sedikit kehalusan di dark chocolate-nya. Untuk mereka yang baru mengenal Robusta, ini adalah pintu yang tepat."</div>
+</div>
+<div style="background:#2a2420;padding:10px 32px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(168,144,128,.2)"><span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(168,144,128,.6)">Robusta Series 02/04 — Mazaya Coffee</span><span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(168,144,128,.6)">Jl. Bustaman No. 162, Tembung</span><span style="font-family:'Playfair Display',serif;font-size:18px;color:#a89080">17</span></div>
+</div>
+
+<!-- PAGE 18: ROBUSTA LAMPUNG -->
+<div class="pg" id="p20">
+<div class="top-bar" style="background:#2a2420;border-bottom:1px solid rgba(168,144,128,.2)"><span class="tb-text" style="color:#a89080">Robusta Series — 03 of 04</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#a89080">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#0a0806,#1e1810,#2a2420,#4a3e38)">
+  <div class="img-box" style="color:#a89080;background:rgba(168,144,128,.08);border-color:rgba(168,144,128,.22)">Paste foto<br>di sini</div>
+  <div style="display:inline-block;background:rgba(212,160,32,.15);border:1px solid rgba(212,160,32,.4);color:#d4a020;font-size:8px;letter-spacing:3px;text-transform:uppercase;padding:3px 10px;border-radius:2px;margin-bottom:10px">Seri Robusta Mazaya — 03</div>
+  <div class="hero-label" style="color:#a89080">Robusta — EK1 Grade · Karakter Paling Khas</div>
+  <div class="hero-title">Robusta<br>Lampung EK1</div>
+  <div class="hero-sub" style="color:rgba(168,144,128,.85)">Lampung, Sumatera — Robusta Paling Ikonik Indonesia</div>
+  <div class="badges"><span class="badge special" style="background:rgba(212,160,32,.18);border-color:#d4a020;color:#d4a020">2× Kafein Arabica</span><span class="badge" style="color:#a89080;border-color:rgba(168,144,128,.38)">EK1 — Grade Terbaik</span><span class="badge" style="color:#a89080;border-color:rgba(168,144,128,.38)">Most Smoky</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#4a3e38">Flavor Notes</div>
+    <div style="border-left:2px solid #4a3e38;padding-left:14px"><div class="flavor-tags">
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Earthy Bold</span><span class="ftag" style="background:#e8e0d8;color:#786050">Smoky</span>
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Dark Chocolate Pahit</span><span class="ftag" style="background:#e8e0d8;color:#786050">Spice Ringan</span>
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Very Heavy Body</span><span class="ftag" style="background:#e0d8d0;color:#2a2420">Bitter-Sweet Finish</span>
+    </div></div>
+  </div>
+  <div class="edu-box" style="background:rgba(120,96,80,.08);border-color:#786050">
+    <div class="edu-title" style="color:#786050">Mengapa Lampung Punya Karakter Smoky?</div>
+    <div class="edu-grid">
+      <div class="edu-card" style="background:rgba(120,96,80,.07);border:1px solid rgba(120,96,80,.15)"><div class="edu-card-title" style="color:#4a3020">Tanah Vulkanik Kering</div><div class="edu-card-desc" style="color:#6b5040">Lampung tumbuh di dataran lebih kering dan panas — menghasilkan konsentrasi earthy dan smoky yang unik</div></div>
+      <div class="edu-card" style="background:rgba(120,96,80,.07);border:1px solid rgba(120,96,80,.15)"><div class="edu-card-title" style="color:#4a3020">Identitas Robusta Nasional</div><div class="edu-card-desc" style="color:#6b5040">Mayoritas kopi sachet dan kopi instan Indonesia menggunakan Robusta Lampung sebagai base-nya</div></div>
+      <div class="edu-card" style="background:rgba(120,96,80,.07);border:1px solid rgba(120,96,80,.15)"><div class="edu-card-title" style="color:#4a3020">Premium vs Massal</div><div class="edu-card-desc" style="color:#6b5040">Grade EK1 Mazaya berbeda jauh dari Robusta Lampung pasar — biji dipilih paling seragam & besar</div></div>
+      <div class="edu-card" style="background:rgba(120,96,80,.07);border:1px solid rgba(120,96,80,.15)"><div class="edu-card-title" style="color:#4a3020">Pengolahan Tradisional</div><div class="edu-card-desc" style="color:#6b5040">Metode pengolahan khas Lampung turut berkontribusi pada karakter smoky yang menjadi ciri khasnya</div></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#4a3e38">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:8%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:92%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Smokiness</span><div class="bar-track"><div class="bar-fill" style="width:85%;background:#786050"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Caffeine</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:#d4a020"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Finish</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#4a3e38"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#4a3e38">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Tubruk / kopi hitam — Smoky keluar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Espresso base — Karakter kuat</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Kopi susu — Rasa tidak hilang</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Moka Pot — Spice & smoky intens</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Cold Brew — Smoky smooth dingin</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Lampung<br>Sumsel</div>
+    <div><div class="origin-name" style="color:#2a2420">Lampung, Sumatera</div>
+      <div class="origin-detail"><strong>Kafein:</strong> ±2.2–2.7% — tertinggi di koleksi</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Satu-satunya Robusta dengan karakter smoky</div>
+      <div class="origin-detail"><strong>Fakta:</strong> Base kopi sachet terbesar di Indonesia</div>
+    </div>
+  </div>
+  <div class="narasi">"Lampung adalah Robusta yang paling Indonesia — harafiah. Sebagian besar kopi yang pernah Anda minum dalam kemasan sachet menggunakan Robusta Lampung. Yang ada di hadapan Anda adalah versi yang berbeda: biji-biji terbaik yang dipilih manual, grade EK1, dengan karakter smoky yang bukan kelemahan — melainkan identitas yang tidak bisa direplikasi oleh origin manapun."</div>
+</div>
+<div style="background:#2a2420;padding:10px 32px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(168,144,128,.2)"><span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(168,144,128,.6)">Robusta Series 03/04 — Mazaya Coffee</span><span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(168,144,128,.6)">Jl. Bustaman No. 162, Tembung</span><span style="font-family:'Playfair Display',serif;font-size:18px;color:#a89080">18</span></div>
+</div>
+
+<!-- PAGE 19: ROBUSTA JAVA -->
+<div class="pg" id="p21">
+<div class="top-bar" style="background:#2a2420;border-bottom:1px solid rgba(168,144,128,.2)"><span class="tb-text" style="color:#a89080">Robusta Series — 04 of 04</span><span class="tb-brand" style="color:#fff">Mazaya Coffee</span><span class="tb-text" style="color:#a89080">Cafe & Roastery</span></div>
+<div class="hero" style="background:linear-gradient(150deg,#0a0806,#1e1810,#2a2420,#4a3e38)">
+  <div class="img-box" style="color:#a89080;background:rgba(168,144,128,.08);border-color:rgba(168,144,128,.22)">Paste foto<br>di sini</div>
+  <div style="display:inline-block;background:rgba(212,160,32,.15);border:1px solid rgba(212,160,32,.4);color:#d4a020;font-size:8px;letter-spacing:3px;text-transform:uppercase;padding:3px 10px;border-radius:2px;margin-bottom:5px">Seri Robusta Mazaya — 04</div>
+  <div style="display:inline-block;background:rgba(196,154,60,.15);border:1px solid rgba(196,154,60,.45);color:#c49a3c;font-size:8px;letter-spacing:3px;text-transform:uppercase;padding:3px 10px;border-radius:2px;margin-bottom:10px;margin-left:5px">Halaman Terakhir Katalog</div>
+  <div class="hero-label" style="color:#a89080">Robusta — EK1 Grade · Paling Versatile</div>
+  <div class="hero-title">Robusta<br>Java EK1</div>
+  <div class="hero-sub" style="color:rgba(168,144,128,.85)">Jawa Timur — Robusta Paling Clean & Seimbang di Koleksi</div>
+  <div class="badges"><span class="badge special" style="background:rgba(212,160,32,.18);border-color:#d4a020;color:#d4a020">2× Kafein Arabica</span><span class="badge" style="color:#a89080">EK1 — Grade Terbaik</span><span class="badge special" style="background:rgba(196,154,60,.15);border-color:#c49a3c;color:#c49a3c">Penutup Katalog</span></div>
+</div>
+<div class="body-area">
+  <div><div class="section-label" style="color:#4a3e38">Flavor Notes</div>
+    <div style="border-left:2px solid #4a3e38;padding-left:14px"><div class="flavor-tags">
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Earthy Clean</span><span class="ftag" style="background:#e0d8d0;color:#2a2420">Dark Chocolate</span>
+      <span class="ftag" style="background:#dde8d8;color:#5a7050">Herbal Ringan</span><span class="ftag" style="background:#e0d8d0;color:#2a2420">Woody</span>
+      <span class="ftag" style="background:#e0d8d0;color:#2a2420">Medium-Heavy Body</span><span class="ftag" style="background:#dde8d8;color:#5a7050">Balanced Robusta</span>
+    </div></div>
+  </div>
+  <div class="edu-box" style="background:rgba(90,112,80,.08);border-color:#5a7050">
+    <div class="edu-title" style="color:#5a7050">Mengapa Java EK1 Paling Versatile untuk Barista?</div>
+    <div class="edu-grid">
+      <div class="edu-card" style="background:rgba(90,112,80,.07);border:1px solid rgba(90,112,80,.15)"><div class="edu-card-title" style="color:#2a3820">I — Blend Espresso Ideal</div><div class="edu-card-desc" style="color:#4a5a40">Karakter Java yang clean tidak agresif saat diblend — body dan kafein bertambah tanpa mendominasi Arabica</div></div>
+      <div class="edu-card" style="background:rgba(90,112,80,.07);border:1px solid rgba(90,112,80,.15)"><div class="edu-card-title" style="color:#2a3820">II — Transisi Arabica → Robusta</div><div class="edu-card-desc" style="color:#4a5a40">Paling mudah diterima pelanggan yang baru coba Robusta — earthy-nya lebih bersih dari tiga lainnya</div></div>
+      <div class="edu-card" style="background:rgba(90,112,80,.07);border:1px solid rgba(90,112,80,.15)"><div class="edu-card-title" style="color:#2a3820">III — Herbal yang Membedakan</div><div class="edu-card-desc" style="color:#4a5a40">Ada sentuhan herbal ringan khas Jawa — tidak ada di Gayo, Sidikalang, atau Lampung</div></div>
+      <div class="edu-card" style="background:rgba(90,112,80,.07);border:1px solid rgba(90,112,80,.15)"><div class="edu-card-title" style="color:#2a3820">IV — Body Paling Manageable</div><div class="edu-card-desc" style="color:#4a5a40">Paling mudah dikendalikan — baik untuk espresso, kopi susu, maupun manual brew</div></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div><div class="section-label" style="color:#4a3e38">Profil Rasa</div>
+      <div class="bar-row"><span class="bar-key">Acidity</span><div class="bar-track"><div class="bar-fill" style="width:12%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Body</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Earthiness</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:#4a3e38"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Caffeine</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:#d4a020"></div></div></div>
+      <div class="bar-row"><span class="bar-key">Herbiness</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:#5a7050"></div></div></div>
+    </div>
+    <div><div class="section-label" style="color:#4a3e38">Cocok Diseduh</div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Blend Espresso — Paling direkomendasikan</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">V60 / Pour Over — Herbal lebih keluar</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Espresso single — Clean & bold</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Kopi susu — Body kuat, tidak bitter</span></div>
+      <div class="brew-item"><div class="brew-dot" style="background:#4a3e38"></div><span class="brew-text">Cold Brew — Clean & caffeinated</span></div>
+    </div>
+  </div>
+  <div class="origin-box"><div class="map-box">Peta<br>Jawa<br>Timur</div>
+    <div><div class="origin-name" style="color:#2a2420">Jawa Timur, Indonesia</div>
+      <div class="origin-detail"><strong>Kafein:</strong> ±2.0–2.4% — setara Sidikalang</div>
+      <div class="origin-detail"><strong>Keunggulan:</strong> Paling versatile & clean di seri Robusta</div>
+      <div class="origin-detail"><strong>Keunikan:</strong> Herbal ringan yang khas Jawa Timur</div>
+    </div>
+  </div>
+  <div class="narasi">"Java EK1 menutup perjalanan ini dengan cara yang paling elegan — bukan dengan berteriak, tapi dengan menunjukkan bahwa Robusta pun bisa hadir dengan kehalusan. Di antara empat Robusta dalam koleksi Mazaya, ia yang paling mudah diajak bekerja sama. Kemampuan untuk ada di mana-mana tanpa kehilangan dirinya sendiri."</div>
+  <div style="background:rgba(196,154,60,.08);border:1px solid rgba(196,154,60,.25);border-radius:4px;padding:11px 14px;text-align:center;margin-top:4px">
+    <div style="font-family:'Playfair Display',serif;font-size:14px;color:#c49a3c;margin-bottom:5px">Terima Kasih Telah Menjelajahi Koleksi Mazaya</div>
+    <div style="font-size:11px;color:#5a4a30;line-height:1.7">Dari dataran tinggi Gayo hingga lembah terpencil Baliem, dari lereng Kawah Ijen hingga kebun kopi Kintamani — setiap cangkir yang kami sajikan adalah hasil dari perjalanan panjang.</div>
+    <div style="font-family:'Playfair Display',serif;font-size:13px;color:#2a2420;font-weight:700;margin-top:7px;letter-spacing:1px">Mazaya Coffee — Cafe & Roastery</div>
+  </div>
+</div>
+<div style="background:#2a2420;padding:10px 32px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(168,144,128,.2)"><span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(168,144,128,.6)">Robusta Series 04/04 — Katalog Selesai</span><span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(168,144,128,.6)">Jl. Bustaman No. 162, Tembung</span><span style="font-family:'Playfair Display',serif;font-size:18px;color:#c49a3c">19</span></div>
+</div>
+
+</div><!-- end catalog frame -->
+</div><!-- end frameOuter -->
+
+<script>
+const PAGES = [
+  {id:'p0', label:'Cover', short:'CVR'},
+  {id:'p1', label:'Index (i)', short:'IDX'},
+  {id:'p2', label:'Pengantar (ii)', short:'PNG'},
+  {id:'p3', label:'01 Gayo GR-1', short:'GR1'},
+  {id:'p4', label:'02 Gayo Natural', short:'NAT'},
+  {id:'p5', label:'03 Gayo Honey', short:'HON'},
+  {id:'p6', label:'04 Gayo Peaberry', short:'PBY'},
+  {id:'p7', label:'05 Gayo Wine', short:'WNE'},
+  {id:'p8', label:'06 Gayo Longberry', short:'LNG'},
+  {id:'p9', label:'07 Lintong', short:'LNT'},
+  {id:'p10', label:'08 Sidikalang', short:'SDK'},
+  {id:'p11', label:'09 Mandheling', short:'MND'},
+  {id:'p12', label:'10 Kerinci', short:'KRC'},
+  {id:'p13', label:'11 Bali Kintamani', short:'BLI'},
+  {id:'p14', label:'12 Java Ijen', short:'IJN'},
+  {id:'p15', label:'13 Toraja Kalosi', short:'TRJ'},
+  {id:'p16', label:'14 Papua Wamena', short:'PPW'},
+  {id:'p17', label:'15 Brazil', short:'BRZ'},
+  {id:'p18', label:'16 Rob. Gayo', short:'RG'},
+  {id:'p19', label:'17 Rob. Sidikalang', short:'RS'},
+  {id:'p20', label:'18 Rob. Lampung', short:'RL'},
+  {id:'p21', label:'19 Rob. Java', short:'RJ'},
+];
+let cur = 0;
+
+function buildThumbs() {
+  const strip = document.getElementById('thumbStrip');
+  PAGES.forEach((p, i) => {
+    const t = document.createElement('div');
+    t.className = 'thumb' + (i===0?' active':'');
+    t.id = 'thumb-'+i;
+    t.innerHTML = `<span class="thumb-num">${i===0?'CVR':i<=2?['i','ii'][i-1]:String(i-2).padStart(2,'0')}</span><span style="font-size:7px;text-align:center;line-height:1.2">${p.short}</span>`;
+    t.onclick = () => goTo(i);
+    strip.appendChild(t);
+  });
+}
+
+function goTo(n) {
+  document.getElementById(PAGES[cur].id).classList.remove('active');
+  document.getElementById('thumb-'+cur).classList.remove('active');
+  cur = n;
+  document.getElementById(PAGES[cur].id).classList.add('active');
+  document.getElementById('thumb-'+cur).classList.add('active');
+  document.getElementById('thumb-'+cur).scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  document.getElementById('pageInd').textContent = PAGES[cur].label + ' / ' + PAGES.length;
+  document.getElementById('prevBtn').disabled = cur === 0;
+  document.getElementById('nextBtn').disabled = cur === PAGES.length - 1;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function navigate(dir) { if(cur+dir>=0 && cur+dir<PAGES.length) goTo(cur+dir); }
+
+document.addEventListener('keydown', e => {
+  if(e.key==='ArrowRight'||e.key==='ArrowDown') navigate(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') navigate(-1);
+});
+
+buildThumbs();
+goTo(0);
+
+/* ── Penyesuaian otomatis agar halaman (640px) pas di layar HP ──
+   Pakai CSS "zoom" (bukan transform) karena zoom betul-betul mengubah
+   ukuran tata letak elemen, jadi tinggi kontainer ikut menyesuaikan
+   otomatis — tidak perlu dihitung manual dan tidak akan "menyusut" progresif. */
+const catalogEl = document.getElementById('catalog');
+const outerEl = document.getElementById('frameOuter');
+const NATURAL_WIDTH = 640;
+
+function fitScale() {
+  const available = outerEl.clientWidth;
+  const scale = Math.min(1, available / NATURAL_WIDTH);
+  catalogEl.style.zoom = scale;
+  // Samakan lebar bagian atas (tombol & thumbnail) dengan lebar konten yang sudah di-zoom
+  const renderedWidth = catalogEl.getBoundingClientRect().width;
+  document.querySelector('.viewer-controls').style.maxWidth = renderedWidth + 'px';
+  document.getElementById('thumbStrip').style.maxWidth = renderedWidth + 'px';
+}
+window.addEventListener('resize', fitScale);
+window.addEventListener('orientationchange', fitScale);
+window.addEventListener('load', fitScale);
+fitScale();
+
+/* ── Swipe kiri/kanan untuk ganti halaman di layar sentuh ── */
+let touchStartX = 0, touchStartY = 0;
+outerEl.addEventListener('touchstart', e => {
+  touchStartX = e.changedTouches[0].screenX;
+  touchStartY = e.changedTouches[0].screenY;
+}, {passive:true});
+outerEl.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].screenX - touchStartX;
+  const dy = e.changedTouches[0].screenY - touchStartY;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+    if (dx < 0) navigate(1); else navigate(-1);
+  }
+}, {passive:true});
+</script>
+</body>
+</html>
